@@ -5,7 +5,11 @@ import random
 # 2 - 게임 변수 초기화
 # 2.1 - 게임 화면
 pygame.init()
-screen = pygame.display.set_mode((480, 640))
+SCREEN_WIDTH = 480
+SCREEN_HEIGHT = 640
+SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+SCREEN_RECT = SCREEN.get_rect()
+ENEMY_OFFSET_WIDTH = 5  # min offset for enemy
 
 # 2.2 - 시간관련 변수
 FPS = 30
@@ -45,7 +49,7 @@ def text(arg, x, y):
     textRect = text.get_rect()
     textRect.centerx = x
     textRect.centery = y
-    screen.blit(text, textRect)
+    SCREEN.blit(text, textRect)
 
 
 class Spaceship():
@@ -57,10 +61,10 @@ class Spaceship():
         self.pos = [x, y]
 
     def get_rect(self):
-        spaceshiprect = pygame.Rect(spaceship.img.get_rect())
-        spaceshiprect.left = spaceship.pos[0]
-        spaceshiprect.top = spaceship.pos[1]
-        return spaceshiprect
+        rect = pygame.Rect(self.img.get_rect())
+        rect.left = self.pos[0]
+        rect.top = self.pos[1]
+        return rect
 
     def draw(self, screen):
         screen.blit(self.img, self.pos)
@@ -75,78 +79,107 @@ class Asteroid():
     def move(self):
         self.pos[0] += self.speed[0]
         self.pos[1] += self.speed[1]
+        # delete if self is out of screen
+        if not self.get_rect().colliderect(SCREEN_RECT):
+            del self
 
     def get_rect(self):
-        stonerect = pygame.Rect(self.img.get_rect())
-        stonerect.left = self.pos[0]
-        stonerect.top = self.pos[1]
-        return stonerect
+        rect = pygame.Rect(self.img.get_rect())
+        rect.left = self.pos[0]
+        rect.top = self.pos[1]
+        return rect
+
+    def do_when_collide(self, player):
+        landingsound.play()
+        del self
 
     def draw(self, screen):
         screen.blit(self.img, self.pos)
 
 
-spaceship = Spaceship(0, 600, spaceshipimg)
-list_asteroid = []
+class Game():
+    def __init__(self, enemy_images, level_interval, fps=30):
+        # variables
+        self.player = Spaceship(0, 600, spaceshipimg)
+        self.list_entities = []
+        self.score = 0
+        self.fps = fps
+        self.enemy_timer = 0
+        self.running = True
+        self.level_interval = level_interval
+
+        # constants
+        self.ENEMY_IMAGES = enemy_images
+
+    def make_enemy(self):
+        self.list_entities.append(Asteroid(
+            random.randint(ENEMY_OFFSET_WIDTH,
+                           SCREEN_WIDTH-ENEMY_OFFSET_WIDTH),
+            0,
+            self.ENEMY_IMAGES[random.randint(0, len(self.ENEMY_IMAGES)-1)]))
+
+    def move_player(self, x, y):
+        self.player.moveto(x, y)
+
+    def move_enemies(self):
+        for enemy in self.list_entities:
+            enemy.move()
+
+    def check_collide(self):
+        player_rect = self.player.get_rect()
+        for enemy in self.list_entities:
+            if enemy.get_rect().colliderect(player_rect):
+                enemy.do_when_collide(self.player)
+                self.running = False
+
+    def draw(self):
+        self.player.draw(SCREEN)
+        for enemy in self.list_entities:
+            enemy.draw(SCREEN)
+
+    def update(self):
+        # 8 - 점수 증가, 게임속도 증가
+        self.score += 1
+        text(self.score, 400, 10)
+        if self.score % self.level_interval == 0:
+            self.fps += 2
+
+        # 9 - 게임 요소 상태 변경
+        pos = pygame.mouse.get_pos()
+        self.move_player(pos[0], self.player.pos[1])
+
+        self.enemy_timer -= 10
+        if self.enemy_timer <= 0:
+            self.make_enemy()
+            self.enemy_timer = random.randint(50, 200)
+
+        self.move_enemies()
+        self.check_collide()
+        self.draw()
+
+
+game = Game(enemy_images=asteroidimgs, level_interval=50)
 
 # 5 - 게임 루프
-running = True
-while running:
-    # 6 - 화면을 그리기에 앞서 화면을 흰색으로 지우기
-    screen.fill((255, 255, 255))
+while game.running:
+    # 6 - 화면을 흰색으로 지우기
+    SCREEN.fill((255, 255, 255))
 
     # 7 - 키보드/마우스 이벤트
     for event in pygame.event.get():
-        # X 버튼을 클릭하면 게임 종료
         if event.type == pygame.QUIT:
             exit()
 
-    # 8 - 점수 증가, 게임속도 증가
-    score += 1
-    text(score, 400, 10)
-    if score % 100 == 0:
-        FPS += 2
-
-    # 9 - 게임 요소 상태 변경
-    position = pygame.mouse.get_pos()
-    spaceship.moveto(position[0], 600)
-    spaceship.draw(screen)
-
-    # 9.2 - asteroids 추가하기
-    asteroidtimer -= 10
-    if asteroidtimer <= 0:
-        list_asteroid.append(Asteroid(random.randint(
-            5, 475), 0, asteroidimgs[random.randint(0, len(asteroidimgs)-1)]))
-        asteroidtimer = random.randint(50, 200)
-
-    for stone in list_asteroid:
-        # 모든 asteroids 이동
-        stone.move()
-
-        # spaceship에 닿지 않을 때
-        if stone.pos[1] > 640:
-            del stone
-            continue
-
-        # spaceship에 닿을 때
-        if stone.get_rect().colliderect(spaceship.get_rect()):
-            landingsound.play()
-            del stone
-            running = False
-            continue
-
-        # asteroid 그리기
-        stone.draw(screen)
-
+    game.update()
     # 10 - 게임 속도
-    fpsClock.tick(FPS)
+    fpsClock.tick(game.fps)
 
     # 11 - 화면 전체 업데이트
     pygame.display.flip()
 
 # 12 - 게임 종료 화면
-screen.blit(gameover, (0, 0))
-text(score, screen.get_rect().centerx, screen.get_rect().centery)
+SCREEN.blit(gameover, (0, 0))
+text(game.score, SCREEN.get_rect().centerx, SCREEN.get_rect().centery)
 pygame.display.flip()
 
 while 1:
