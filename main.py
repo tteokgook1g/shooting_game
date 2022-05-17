@@ -2,19 +2,23 @@
 import pygame
 import random
 
+from objects.player import Player
+from objects.bullet import Bullet
+from objects.enemy import Enemy
+
 # 2 - 게임 변수 초기화
 pygame.init()
 
-# 2.1 global constants
+# 2.1 전역 상수
 SCREEN_WIDTH = 480
 SCREEN_HEIGHT = 640
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 SCREEN_RECT = SCREEN.get_rect()
 ENEMY_OFFSET_WIDTH = 5  # min offset for enemy
 
-RED = (255, 0, 0)
+WHITE = (255, 255, 255)
 
-# 2.2 variables about time
+# 2.2 시간 변수
 FPS = 30
 fpsClock = pygame.time.Clock()
 
@@ -40,7 +44,7 @@ except Exception as err:
     exit(0)
 
 
-# 4 blit text
+# 4 텍스트 blit
 def text(arg, x, y):
     font = pygame.font.Font(None, 24)
     text = font.render("Score: " + str(arg).zfill(6), True, (0, 0, 0))
@@ -49,145 +53,6 @@ def text(arg, x, y):
     textRect.centery = y
     SCREEN.blit(text, textRect)
 
-# 5 class of game objects
-
-# 5.1 class Player
-
-
-class Player():
-    def __init__(self, pos: tuple[int], img: pygame.Surface, speed: tuple[int], boundary_rect: pygame.Rect, power: int):
-        '''
-        pos: (x, y) | initial position
-        img: pygame.Surface | image
-        speed: (speed_x, speed_y) | initial speed
-        boundary_rect: pygame.Rect | boundary
-        power: int | attack power
-        '''
-
-        self.pos = list(pos[:])
-        self.img = img
-        self.speed = list(speed[:])
-        self.boundary_rect = boundary_rect
-        self.power = power
-
-    def moveto(self, x, y):
-        self.pos = [x, y]
-        self.check_boundary()
-
-    def move(self, keys):
-        prev = self.pos[:]
-        if keys[pygame.K_a]:
-            self.pos[0] -= self.speed[0]
-        if keys[pygame.K_d]:
-            self.pos[0] += self.speed[0]
-        if keys[pygame.K_w]:
-            self.pos[1] -= self.speed[1]
-        if keys[pygame.K_s]:
-            self.pos[1] += self.speed[1]
-
-        if prev != self.pos:
-            self.check_boundary()
-
-    def check_boundary(self):
-        player_rect = self.get_rect()
-        left = self.boundary_rect.left
-        right = self.boundary_rect.right - player_rect.width
-        top = self.boundary_rect.top
-        bottom = self.boundary_rect.bottom - player_rect.height
-
-        if self.pos[0] < left:
-            self.pos[0] = left
-        elif self.pos[0] > right:
-            self.pos[0] = right
-        if self.pos[1] < top:
-            self.pos[1] = top
-        elif self.pos[1] > bottom:
-            self.pos[1] = bottom
-
-    def get_rect(self):
-        rect = self.img.get_rect()
-        rect.left = self.pos[0]
-        rect.top = self.pos[1]
-        return rect
-
-    def draw(self, screen: pygame.Surface):
-        screen.blit(self.img, self.pos)
-
-# 5.2 non-player interface
-
-
-class Entity():
-    '''
-    MUST OVERRIDE do_when_collide_with_player(self, player)
-    '''
-
-    def __init__(self, pos: tuple[int], img: pygame.Surface, speed: tuple[int], func_delete):
-        self.pos = list(pos[:])
-        self.img = img
-        self.speed = list(speed[:])
-        self.delete = func_delete
-
-    def move(self):
-        self.pos[0] += self.speed[0]
-        self.pos[1] += self.speed[1]
-        # delete if self is out of screen
-        if not self.get_rect().colliderect(SCREEN_RECT):
-            self.delete(self)
-
-    def get_rect(self):
-        rect = pygame.Rect(self.img.get_rect())
-        rect.left = self.pos[0]
-        rect.top = self.pos[1]
-        return rect
-
-    def draw(self, screen: pygame.Surface):
-        screen.blit(self.img, self.pos)
-
-
-# 5.3 class Enemy
-
-
-class Enemy(Entity):
-    def __init__(self, pos: tuple[int], img: pygame.Surface, speed: tuple[int], func_delete, score: int, health=100):
-        super().__init__(pos, img, speed, func_delete)
-        self.health = health
-        self.score = score
-
-    def do_when_collide_with_player(self, player: Player):
-        landingsound.play()
-        self.delete(self)
-
-    def attacked(self, power: int):
-        '''
-        it returns score for attack
-        enemy is attacked by power
-        '''
-        self.health -= power
-        # delete when health <= 0
-        if self.health <= 0:
-            self.delete(self)
-            return self.score
-        return 0
-
-
-# 5.4 class Bullet
-
-
-class Bullet(Entity):
-    def __init__(self, pos: tuple[int], img: pygame.Surface, speed: tuple[int], power: int, func_delete):
-        super().__init__(pos, img, speed, func_delete)
-        self.power = power  # attack power
-
-    def do_when_collide_with_player(self, player: Player):
-        ''' '''  # overrided
-        pass  # do nothing
-
-    def do_when_collide_with_enemy(self, enemy: Enemy):
-        '''
-        it returns score for attack
-        '''
-        self.delete(self)
-        return enemy.attacked(self.power)
 
 # 6 class Game
 
@@ -220,7 +85,8 @@ class Game():
             img=self.ENEMY_IMAGES[random.randint(0, len(self.ENEMY_IMAGES)-1)],
             speed=[0, 10],
             func_delete=self.delete_enemy,
-            score=200))
+            boundary_rect=SCREEN_RECT,
+            score=20))
 
     def make_bullet(self):
         pl_rect = self.player.get_rect()
@@ -235,6 +101,7 @@ class Game():
             pos=img_rect.topleft,
             img=img_bullet,
             speed=[0, -10],
+            boundary_rect=SCREEN_RECT,
             power=self.player.power,
             func_delete=self.delete_bullet))
 
@@ -304,11 +171,11 @@ class Game():
 
 
 game = Game(enemy_images=asteroidimgs, bullet_images=bullet_images,
-            level_interval=50, player_power=35, fps=FPS)
+            level_interval=50, player_power=100, fps=FPS)
 
 # 7 game loop
 while game.running:
-    SCREEN.fill((255, 255, 255))
+    SCREEN.fill(WHITE)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
