@@ -12,6 +12,8 @@ SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 SCREEN_RECT = SCREEN.get_rect()
 ENEMY_OFFSET_WIDTH = 5  # min offset for enemy
 
+RED = (255, 0, 0)
+
 # 2.2 variables about time
 FPS = 30
 fpsClock = pygame.time.Clock()
@@ -26,6 +28,7 @@ try:
     asteroid2 = pygame.image.load("./img/asteroid02.png")
     asteroidimgs = (asteroid0, asteroid1, asteroid2)
     gameover = pygame.image.load("./img/gameover.jpg")
+    bullet_images = (pygame.image.load("./img/bullet01.png"),)
 
     # 3.2 - 효과음 삽입
     takeoffsound = pygame.mixer.Sound("./audio/takeoff.wav")
@@ -52,18 +55,20 @@ def text(arg, x, y):
 
 
 class Player():
-    def __init__(self, pos: tuple[int], img: pygame.Surface, speed: tuple[int], boundary_rect: pygame.Rect):
+    def __init__(self, pos: tuple[int], img: pygame.Surface, speed: tuple[int], boundary_rect: pygame.Rect, power: int):
         '''
         pos: (x, y) | initial position
         img: pygame.Surface | image
         speed: (speed_x, speed_y) | initial speed
         boundary_rect: pygame.Rect | boundary
+        power: int | attack power
         '''
 
         self.pos = list(pos[:])
         self.img = img
         self.speed = list(speed[:])
         self.boundary_rect = boundary_rect
+        self.power = power
 
     def moveto(self, x, y):
         self.pos = [x, y]
@@ -100,7 +105,7 @@ class Player():
             self.pos[1] = bottom
 
     def get_rect(self):
-        rect = pygame.Rect(self.img.get_rect())
+        rect = self.img.get_rect()
         rect.left = self.pos[0]
         rect.top = self.pos[1]
         return rect
@@ -116,17 +121,18 @@ class Entity():
     MUST OVERRIDE do_when_collide_with_player(self, player)
     '''
 
-    def __init__(self, pos: tuple[int], img: pygame.Surface, speed: tuple[int]):
+    def __init__(self, pos: tuple[int], img: pygame.Surface, speed: tuple[int], func_delete):
         self.pos = list(pos[:])
         self.img = img
         self.speed = list(speed[:])
+        self.delete = func_delete
 
     def move(self):
         self.pos[0] += self.speed[0]
         self.pos[1] += self.speed[1]
         # delete if self is out of screen
         if not self.get_rect().colliderect(SCREEN_RECT):
-            del self
+            self.delete(self)
 
     def get_rect(self):
         rect = pygame.Rect(self.img.get_rect())
@@ -134,73 +140,139 @@ class Entity():
         rect.top = self.pos[1]
         return rect
 
-    def do_when_collide_with_player(self, player):
-        '''
-        MUST OVERRIDE
-        '''
-        raise NotImplementedError
-
     def draw(self, screen: pygame.Surface):
         screen.blit(self.img, self.pos)
+
 
 # 5.3 class Enemy
 
 
 class Enemy(Entity):
-    def __init__(self, pos: tuple[int], img: pygame.Surface, speed: tuple[int]):
-        super().__init__(pos, img, speed)
+    def __init__(self, pos: tuple[int], img: pygame.Surface, speed: tuple[int], func_delete, score: int, health=100):
+        super().__init__(pos, img, speed, func_delete)
+        self.health = health
+        self.score = score
 
-    def do_when_collide_with_player(self, player):
-        ''' '''  # overrided
-
+    def do_when_collide_with_player(self, player: Player):
         landingsound.play()
-        del self
+        self.delete(self)
 
+    def attacked(self, power: int):
+        '''
+        it returns score for attack
+        enemy is attacked by power
+        '''
+        self.health -= power
+        # delete when health <= 0
+        if self.health <= 0:
+            self.delete(self)
+            return self.score
+        return 0
+
+
+# 5.4 class Bullet
+
+
+class Bullet(Entity):
+    def __init__(self, pos: tuple[int], img: pygame.Surface, speed: tuple[int], power: int, func_delete):
+        super().__init__(pos, img, speed, func_delete)
+        self.power = power  # attack power
+
+    def do_when_collide_with_player(self, player: Player):
+        ''' '''  # overrided
+        pass  # do nothing
+
+    def do_when_collide_with_enemy(self, enemy: Enemy):
+        '''
+        it returns score for attack
+        '''
+        self.delete(self)
+        return enemy.attacked(self.power)
 
 # 6 class Game
 
 
 class Game():
-    def __init__(self, enemy_images, level_interval: int, fps=30):
+    def __init__(self, enemy_images: tuple[pygame.Surface], bullet_images: tuple[pygame.Surface], level_interval: int, player_power: int, fps=30):
         # variables
         self.player = Player(pos=(200, 600), img=spaceshipimg,
-                             speed=(5, 5), boundary_rect=SCREEN_RECT)
-        self.list_entities: list[Enemy] = []
+                             speed=(5, 5), boundary_rect=SCREEN_RECT, power=player_power)
+        self.list_enemies: list[Enemy] = []
+        self.list_bullets: list[Bullet] = []
         self.score = 0
         self.fps = fps
-        self.enemy_timer = 0
         self.running = True
         self.level_interval = level_interval
         self.next_level_score = level_interval
 
+        # timers
+        self.enemy_timer = 0
+        self.bullet_timer = 0
+
         # constants
         self.ENEMY_IMAGES = enemy_images
+        self.BULLET_IMAGES = bullet_images
 
     def make_enemy(self):
-        self.list_entities.append(Enemy(
+        self.list_enemies.append(Enemy(
             pos=(random.randint(ENEMY_OFFSET_WIDTH,
                                 SCREEN_WIDTH-ENEMY_OFFSET_WIDTH), 0),
             img=self.ENEMY_IMAGES[random.randint(0, len(self.ENEMY_IMAGES)-1)],
-            speed=[0, 10]))
+            speed=[0, 10],
+            func_delete=self.delete_enemy,
+            score=200))
+
+    def make_bullet(self):
+        pl_rect = self.player.get_rect()
+        img_bullet = self.BULLET_IMAGES[random.randint(
+            0, len(self.BULLET_IMAGES)-1)]
+
+        img_rect = img_bullet.get_rect()
+        img_rect.bottom = pl_rect.top
+        img_rect.centerx = pl_rect.centerx
+
+        self.list_bullets.append(Bullet(
+            pos=img_rect.topleft,
+            img=img_bullet,
+            speed=[0, -10],
+            power=self.player.power,
+            func_delete=self.delete_bullet))
+
+    # callback of delete
+    def delete_enemy(self, enemy):
+        self.list_enemies.pop(self.list_enemies.index(enemy))
+
+    # callback of delete
+    def delete_bullet(self, bullet):
+        self.list_bullets.pop(self.list_bullets.index(bullet))
 
     def move_player(self, keys):
         self.player.move(keys)
 
-    def move_enemies(self):
-        for enemy in self.list_entities:
+    def move_entities(self):
+        for enemy in self.list_enemies:
             enemy.move()
+        for bullet in self.list_bullets:
+            bullet.move()
 
     def check_collide(self):
         player_rect = self.player.get_rect()
-        for entity in self.list_entities:
-            if entity.get_rect().colliderect(player_rect):
-                entity.do_when_collide_with_player(self.player)
+        for enemy in self.list_enemies:
+            if enemy.get_rect().colliderect(player_rect):
+                enemy.do_when_collide_with_player(self.player)
                 self.running = False
+
+            for bullet in self.list_bullets:
+                if bullet.get_rect().colliderect(enemy.get_rect()):
+                    # increase score for attack
+                    self.score += bullet.do_when_collide_with_enemy(enemy)
 
     def draw(self):
         self.player.draw(SCREEN)
-        for enemy in self.list_entities:
+        for enemy in self.list_enemies:
             enemy.draw(SCREEN)
+        for bullet in self.list_bullets:
+            bullet.draw(SCREEN)
 
     def update(self):
         # increase score
@@ -218,14 +290,21 @@ class Game():
             self.make_enemy()
             self.enemy_timer = random.randint(50, 200)
 
+        # make bullet
+        self.bullet_timer -= 10
+        if self.bullet_timer <= 0:
+            self.make_bullet()
+            self.bullet_timer = 100
+
         # update game objects
         self.move_player(pygame.key.get_pressed())
-        self.move_enemies()
+        self.move_entities()
         self.check_collide()
         self.draw()
 
 
-game = Game(enemy_images=asteroidimgs, level_interval=50, fps=FPS)
+game = Game(enemy_images=asteroidimgs, bullet_images=bullet_images,
+            level_interval=50, player_power=35, fps=FPS)
 
 # 7 game loop
 while game.running:
