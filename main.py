@@ -4,13 +4,15 @@
 
 # 1 - 모듈 임포트
 import random
-from typing import Sequence
+
 import pygame
 
-from src.objects.bullet import Bullet
-from src.objects.enemy import Enemy
-from src.objects.player import Player
 from src.interfaces.object_configs import *
+from src.interfaces.timer import Timer, TimerManager
+from src.modules.bullet import Bullet
+from src.modules.enemy import Enemy
+from src.modules.player import Player
+from src.modules.render_items import draw_text, blit_item
 
 # 2 - 게임 변수 초기화
 pygame.init()
@@ -22,7 +24,7 @@ SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 SCREEN_RECT = SCREEN.get_rect()
 ENEMY_OFFSET_WIDTH = 5  # 적이 좌우 벽에서 떨어진 정도
 
-WHITE = (255, 255, 255)
+BACKGROUND_COLOR = (255, 255, 255)  # white
 BLACK = (0, 0, 0)
 
 # 2.2 시간 변수
@@ -49,18 +51,6 @@ except FileNotFoundError as err:
     print('그림 또는 효과음 삽입에 문제가 있습니다.: ', err)
     pygame.quit()
     exit(0)
-
-
-# 4 텍스트 blit
-def blit_text(screen: pygame.Surface, msg: str, center: tuple[int, int]):
-    '''
-    문자열 msg를 screen의 center위치에 blit한다
-    '''
-    font = pygame.font.Font(None, 24)
-    text = font.render(msg, True, BLACK)
-    textRect = text.get_rect()
-    textRect.center = center
-    screen.blit(text, textRect)
 
 
 # 6 class Game
@@ -98,8 +88,14 @@ class GameStage():
         self.next_level_score = level_interval
 
         # 타이머
-        self.enemy_timer = 0
-        self.bullet_timer = 0
+        self.timer_manager = TimerManager()
+        enemy_timer = Timer()
+        enemy_timer.set_timeout(0, self.make_enemy)
+        self.timer_manager.set_timer(enemy_timer, 'enemy_timer', (5, 20))
+
+        bullet_timer = Timer()
+        bullet_timer.set_timeout(0, self.make_bullet)
+        self.timer_manager.set_timer(bullet_timer, 'bullet_timer', (10, 10))
 
         # 상수
         self.enemy_images = enemy_images
@@ -108,8 +104,12 @@ class GameStage():
         # add event_listener
         self.player.add_event_listener('delete', self.game_over)
 
+    # callbacks ------------------------------------------------
+
     def make_enemy(self):
         '''
+        callback of enemy_timer
+
         새로운 적을 생성한다
         self.ENEMY_IMAGES 중 랜덤 이미지를 사용한다
         '''
@@ -131,8 +131,12 @@ class GameStage():
             'add_score', self.add_score, new_enemy.score)
         self.list_enemies.append(new_enemy)
 
+        return True
+
     def make_bullet(self):
         '''
+        callback of bullet_timer
+
         새로운 총알을 생성한다
         self.BULLET_IMAGES 중 랜덤 이미지를 사용한다
         '''
@@ -158,6 +162,8 @@ class GameStage():
         new_bullet.add_event_listener('delete', self.delete_bullet, new_bullet)
         self.list_bullets.append(new_bullet)
 
+        return True
+
     def delete_enemy(self, enemy: Enemy):
         '''callback of add_event_listener('delete')'''
         self.list_enemies.pop(self.list_enemies.index(enemy))
@@ -166,11 +172,13 @@ class GameStage():
         '''callback of add_event_listener('delete')'''
         self.list_bullets.pop(self.list_bullets.index(bullet))
 
-    def move_player(self, keys: Sequence[bool]):
+    # ------------------------------------------------ callbacks
+
+    def move_player(self):
         '''
         플레이어를 keys를 통해 움직인다
         '''
-        self.player.move(keys)
+        self.player.move(pygame.key.get_pressed())
 
     def move_entities(self):
         '''
@@ -216,14 +224,25 @@ class GameStage():
         '''
         플레이어와 엔티티를 화면에 그린다
         '''
+        screen.fill(BACKGROUND_COLOR)
         self.player.draw(screen)
         for enemy in self.list_enemies:
             enemy.draw(screen)
         for bullet in self.list_bullets:
             bullet.draw(screen)
 
-        blit_text(screen, f'Score: {str(self.score).zfill(6)}', (400, 10))
-        blit_text(screen, f'Health: {self.player.health}', (400, 40))
+        draw_text(
+            screen=screen,
+            msg=f'Score: {str(self.score).zfill(6)}',
+            color=BLACK,
+            center=(400, 10)
+        )
+        draw_text(
+            screen=screen,
+            msg=f'Health: {self.player.health}',
+            color=BLACK,
+            center=(400, 40)
+        )
 
     def update(self):
         '''
@@ -238,22 +257,13 @@ class GameStage():
             self.next_level_score += self.level_interval
 
         # 랜덤 시간마다 적 생성
-        self.enemy_timer -= 10
-        if self.enemy_timer <= 0:
-            self.make_enemy()
-            self.enemy_timer = random.randint(50, 200)
-
         # 일정 시간마다 총알 생성
-        self.bullet_timer -= 10
-        if self.bullet_timer <= 0:
-            self.make_bullet()
-            self.bullet_timer = 100
+        self.timer_manager.update()
 
         # 플레이어와 엔티티 업데이트
-        self.move_player(pygame.key.get_pressed())  # 플레이어 이동
+        self.move_player()  # 플레이어 이동
         self.move_entities()  # 엔티티 이동
         self.check_collide()  # 충돌 확인
-        self.draw(SCREEN)  # 화면에 그리기
 
 
 # object config
@@ -278,20 +288,27 @@ game = GameStage(
 
 # 7 game loop
 while game.running:
-    SCREEN.fill(WHITE)
 
+    fpsClock.tick(game.fps)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             exit()
 
     game.update()
-    fpsClock.tick(game.fps)
+
+    game.draw(SCREEN)
     pygame.display.flip()
 
+
 # 8 finish screen
-SCREEN.blit(gameover, (0, 0))
-blit_text(SCREEN, f'Score: {str(game.score).zfill(6)}', SCREEN_RECT.center)
+blit_item(SCREEN, gameover, topleft=(0, 0))
+draw_text(
+    screen=SCREEN,
+    msg=f'Score: {str(game.score).zfill(6)}',
+    color=BLACK,
+    center=SCREEN_RECT.center
+)
 pygame.display.flip()
 
 while True:
