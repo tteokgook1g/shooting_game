@@ -2,10 +2,8 @@
 class Player
 '''
 
-from typing import Callable
 import pygame
 
-from ..interfaces.object_configs import PlayerConfig
 from ..interfaces.event_listener import EventListener
 
 
@@ -14,7 +12,7 @@ class Player(EventListener):
     죽을 때 EventListener.call_event('delete') 호출
     '''
 
-    def __init__(self, config: PlayerConfig):
+    def __init__(self, **kwargs):
         '''
         pos: (x, y) | 초기 위치
         img: pygame.Surface | 이미지
@@ -26,12 +24,12 @@ class Player(EventListener):
 
         super().__init__()
 
-        self.pos = list(config.pos[:])
-        self.img = config.img
-        self.speed = list(config.speed[:])
-        self.boundary_rect = config.boundary_rect
-        self.power = config.power
-        self.health = config.health
+        self.pos: list[int, int] = list(kwargs['pos'])
+        self.img: pygame.Surface = kwargs['img']
+        self.speed: list[int, int] = list(kwargs['speed'][:])
+        self.boundary_rect: pygame.Rect = kwargs['boundary_rect']
+        self.power: int = kwargs['power']
+        self.health: int = kwargs['health']
 
     def add_health(self, health):
         '''

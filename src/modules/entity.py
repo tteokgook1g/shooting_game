@@ -6,7 +6,6 @@ from typing import Callable
 import pygame
 
 from ..interfaces.event_listener import EventListener
-from ..interfaces.object_configs import EntityConfig
 
 
 class Entity(EventListener):
@@ -14,7 +13,7 @@ class Entity(EventListener):
     죽을 때 EventListener.call_event('delete') 호출
     '''
 
-    def __init__(self, entity_config: EntityConfig):
+    def __init__(self, **kwargs):
         '''
         pos: (x, y) | 초기 위치
         img: pygame.Surface | 이미지
@@ -23,10 +22,10 @@ class Entity(EventListener):
         '''
         super().__init__()
 
-        self.pos = list(entity_config.pos[:])
-        self.img = entity_config.img
-        self.speed = list(entity_config.speed[:])
-        self.boundary_rect = entity_config.boundary_rect
+        self.pos: list[int, int] = list(kwargs['pos'][:])
+        self.img: pygame.Surface = kwargs['img']
+        self.speed: list[int, int] = list(kwargs['speed'][:])
+        self.boundary_rect: pygame.Rect = kwargs['boundary_rect']
 
     def move(self):
         '''

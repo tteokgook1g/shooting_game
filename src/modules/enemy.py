@@ -3,7 +3,7 @@
 from typing import Callable
 import pygame
 
-from src.interfaces.object_configs import EntityConfig
+
 from .entity import Entity
 from .player import Player
 
@@ -16,27 +16,21 @@ class Enemy(Entity):
     호출
     '''
 
-    def __init__(
-            self,
-            entity_config: EntityConfig,
-            score: int,
-            health: int,
-            power: int):
+    def __init__(self, **kwargs):
         '''
-        score: int | 적이 죽으면 받는 점수
-        health: int | 체력
-        power: int | 공격력, 플레이어와 충돌 시 플레이어가 받는 피해량
-
-        -EntityConfig
         pos: (x, y) | 초기 위치
         img: pygame.Surface | 이미지
         speed: (speed_x, speed_y) | 초기 속도
         boundary_rect: pygame.Rect | 경계 밖으로 벗어나면 삭제
+
+        score: int | 적이 죽으면 받는 점수
+        health: int | 체력
+        power: int | 공격력, 플레이어와 충돌 시 플레이어가 받는 피해량
         '''
-        super().__init__(entity_config)
-        self.health = health
-        self.score = score
-        self.power = power
+        super().__init__(**kwargs)
+        self.health = kwargs['health']
+        self.score = kwargs['score']
+        self.power = kwargs['power']
 
     def do_when_collide_with_player(self, player: Player):
         '''
