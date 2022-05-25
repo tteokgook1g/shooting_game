@@ -57,7 +57,7 @@ class TimerManager():
         self.frames_ranges[timer_name] = frames_range
 
     def update(self):
-        for timer_name in self.timers:
+        for timer_name in self.timers.copy():
             timer = self.timers[timer_name]
             if timer.update():  # 콜백이 실행되면
                 if self.frames_ranges[timer_name] is not None:  # 범위가 설정되어 있으면

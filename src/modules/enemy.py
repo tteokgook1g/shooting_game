@@ -40,8 +40,8 @@ class Enemy(Entity):
         player.add_health(-self.power)
 
     def delete(self):
-        self.call_event('delete')
         self.call_event('add_score')
+        self.call_event('delete')
 
     def attacked(self, attack_power: int, func_increase_score: Callable[[int], None] = None):
         '''

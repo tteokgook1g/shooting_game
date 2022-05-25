@@ -5,6 +5,7 @@
 # 1 - 모듈 임포트
 
 import pygame
+from src.modules.scenes.start_scene import StartScene
 from src.modules.scene_manager import SceneManager
 from src.modules.scenes.finish_scene import FinishScene
 
@@ -18,18 +19,20 @@ pygame.init()
 # 3 - 그림과 효과음 삽입
 try:
     # 3.1 - 그림 삽입
-    spaceshipimg = pygame.image.load("./img/spaceship.png")
+    player_img = pygame.image.load("./img/player.jpg")
+    player_img = pygame.transform.scale(player_img, (192//4, 250//4))
     asteroid0 = pygame.image.load("./img/asteroid00.png")
     asteroid1 = pygame.image.load("./img/asteroid01.png")
     asteroid2 = pygame.image.load("./img/asteroid02.png")
     asteroidimgs = (asteroid0, asteroid1, asteroid2)
     gameover = pygame.image.load("./img/gameover.jpg")
     bullet_imgs = (pygame.image.load("./img/bullet01.png"),)
+    item_imgs = (pygame.image.load("./img/item01.png"),)
+    boss1_spell_img = pygame.image.load("./img/boss1_spell1.png")
+    boss1_img = pygame.image.load("./img/boss1.png")
+    boss1_img = pygame.transform.scale(boss1_img, (192//3, 250//3))
 
     # 3.2 - 효과음 삽입
-    takeoffsound = pygame.mixer.Sound("./audio/takeoff.wav")
-    landingsound = pygame.mixer.Sound("./audio/landing.wav")
-    takeoffsound.play()
 except FileNotFoundError as err:
     print('그림 또는 효과음 삽입에 문제가 있습니다.: ', err)
     pygame.quit()
@@ -41,7 +44,6 @@ SCREEN_WIDTH = 480
 SCREEN_HEIGHT = 640
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 SCREEN_RECT = SCREEN.get_rect()
-ENEMY_OFFSET_WIDTH = 5  # 적이 좌우 벽에서 떨어진 정도
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -65,7 +67,7 @@ global_config = GlobalConfig(
     screen_height=640,
     screen=SCREEN,
     screen_rect=SCREEN_RECT,
-    background=background,
+    stage1_bg=background,
     text_color=BLACK,
     fps=FPS,
     score=0
@@ -74,53 +76,83 @@ enemy_config = EnemyConfig(
     imgs=asteroidimgs,
     speed=(0, 10),
     boundary_rect=SCREEN_RECT,
-    enemy_offset_width=5,
+    enemy_offset_width=5,  # 적이 좌우 벽에서 떨어진 정도
     score=20,
     health=100,
     power=50
 )
 bullet_config = BulletConfig(
-    imgs=(bullet_imgs),
+    imgs=bullet_imgs,
     speed=(0, -10),
     boundary_rect=SCREEN_RECT
+)
+item_config = ItemConfig(
+    imgs=item_imgs,
+    speed=(0, 10),
+    boundary_rect=SCREEN_RECT,
+    item_offset_width=20,
+    heal=10
+)
+boss_config = Config(
+    spell_img=boss1_spell_img,
+    spell_speed=(0, 10),
+    spell_power=10,
+    boss1_img=boss1_img,
+    boss1_health=500,
+    boss1_score=2000,
+    boss1_summon_delay=150
 )
 
 config_manager.add_config('global', global_config)
 config_manager.add_config('enemy', enemy_config)
 config_manager.add_config('bullet', bullet_config)
+config_manager.add_config('item', item_config)
+config_manager.add_config('boss1', boss_config)
 
 
 # scenes
 scene_manager = SceneManager(config_manager=config_manager)
+start_bg = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+start_bg.fill(WHITE)
+start_scene = StartScene(
+    config_manager=config_manager,
+    background=start_bg
+)
+start_scene.add_event_listener(
+    'start_game', scene_manager.goto_scene, 'stage1')
+scene_manager.add_scene('start_scene', start_scene)
+
 stage1 = GameStage(
     enemy_images=config_manager.get_config('enemy', 'imgs'),
     bullet_images=bullet_imgs,
-    level_interval=50,
+    level_interval=200,
     fps=FPS,
     player=Player(
         pos=(SCREEN_WIDTH//2, SCREEN_HEIGHT*3//4),
-        img=spaceshipimg,
+        img=player_img,
         speed=(5, 5),
         boundary_rect=SCREEN_RECT,
-        power=35,
-        health=100
+        power=100,
+        health=200
     ),
     config_manager=config_manager
 )
+stage1.add_event_listener(
+    'game_over', scene_manager.goto_scene, 'finish_scene')
+stage1.add_event_listener(
+    'stage_clear', scene_manager.goto_scene, 'finish_scene')
+scene_manager.add_scene('stage1', stage1)
+
 finish_scene = FinishScene(
     config_manager=config_manager,
     score=0,
     background=gameover
 )
-
-scene_manager.add_scene('stage1', stage1)
 scene_manager.add_scene('finish_scene', finish_scene)
-scene_manager.current_scene = stage1
-scene_manager.next_scene = stage1
 
+scene_manager.current_scene = start_scene
+scene_manager.next_scene = start_scene
 
-stage1.add_event_listener(
-    'game_over', scene_manager.goto_scene, 'finish_scene')
 
 # 7 game loop
 while True:
