@@ -6,10 +6,9 @@
 
 import pygame
 from src.modules.player_weapon import *
-from src.modules.scenes.start_scene import StartScene
 from src.modules.scene_manager import SceneManager
 from src.modules.scenes.finish_scene import FinishScene
-from src.modules.scenes.open_scene import open_scene
+from src.modules.scenes.open_scene import OpeningScene
 
 from src.interfaces.object_configs import *
 from src.modules.scenes.game_stage import GameStage
@@ -17,6 +16,13 @@ from src.modules.player import Player
 
 
 pygame.init()
+# 2.1 전역 상수
+SCREEN_WIDTH = 480
+SCREEN_HEIGHT = 640
+SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+SCREEN_RECT = SCREEN.get_rect()
+ENEMY_OFFSET_WIDTH = 5  # 적이 좌우 벽에서 떨어진 정도
+
 # 3 - 그림과 효과음 삽입
 try:
     # 3.1 - 그림 삽입
@@ -30,27 +36,21 @@ try:
 
     bullet_imgs = (pygame.image.load("./img/bullet01.png"),)
     start_image = (pygame.image.load("./img/start_image.png"))
+    start_image = pygame.transform.scale(
+        start_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
     bullet_img = pygame.image.load("./img/bullet01.png")
     shotgun_img = pygame.image.load("./img/shotgun01.png")
     item_imgs = (pygame.image.load("./img/item01.png"),)
     boss1_spell_img = pygame.image.load("./img/boss1_spell1.png")
     boss1_img = pygame.image.load("./img/boss1.png")
-    boss1_img = pygame.transform.scale(boss1_img, (192//3, 250//3))
+    boss1_img = pygame.transform.scale(boss1_img, (192//2, 250//2))
 
     # 3.2 - 효과음 삽입
 except FileNotFoundError as err:
     print('그림 또는 효과음 삽입에 문제가 있습니다.: ', err)
     pygame.quit()
     exit(0)
-
-
-# 2.1 전역 상수
-SCREEN_WIDTH = 480
-SCREEN_HEIGHT = 640
-SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-SCREEN_RECT = SCREEN.get_rect()
-ENEMY_OFFSET_WIDTH = 5  # 적이 좌우 벽에서 떨어진 정도  
 
 
 WHITE = (255, 255, 255)
@@ -134,7 +134,7 @@ player = Player(
 # scenes
 scene_manager = SceneManager(config_manager=config_manager)
 
-opening_scene = open_scene(
+opening_scene = OpeningScene(
     config_manager=config_manager,
     background=start_image
 )
@@ -142,25 +142,13 @@ stage1 = GameStage(
     enemy_images=config_manager.get_config('enemy', 'imgs'),
     bullet_images=bullet_imgs,
     level_interval=50,
-    fps=FPS,
-    player=Player(
-        pos=(SCREEN_WIDTH//2, SCREEN_HEIGHT*3//4),    
-        img=spaceshipimg,
-        speed=(5, 5),
-        boundary_rect=SCREEN_RECT,     
-        power=35,
-        health=100
-    ),
+    player=player,
+    config_manager=config_manager)
 
-start_bg = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-start_bg.fill(WHITE)
-start_scene = StartScene(
-    config_manager=config_manager,
-    background=start_bg
-)
-start_scene.add_event_listener(
+
+opening_scene.add_event_listener(
     'start_game', scene_manager.goto_scene, 'stage1')
-scene_manager.add_scene('start_scene', start_scene)
+scene_manager.add_scene('start_scene', opening_scene)
 
 stage1 = GameStage(
     enemy_images=config_manager.get_config('enemy', 'imgs'),
@@ -181,22 +169,22 @@ finish_scene = FinishScene(
     background=gameover_image
 )
 
-scene_manager.add_scene("opening_scene",opening_scene)
+scene_manager.add_scene("opening_scene", opening_scene)
 scene_manager.add_scene('stage1', stage1)
 scene_manager.add_scene('finish_scene', finish_scene)
 scene_manager.current_scene = opening_scene
 scene_manager.next_scene = opening_scene
 
 opening_scene.add_event_listener(
-    'staet_game', scene_manager.goto_scene,'stage1'
+    'start_game', scene_manager.goto_scene, 'stage1'
 )
 stage1.add_event_listener(
     'game_over', scene_manager.goto_scene, 'finish_scene')
 
 scene_manager.add_scene('finish_scene', finish_scene)
 
-scene_manager.current_scene = start_scene
-scene_manager.next_scene = start_scene
+scene_manager.current_scene = opening_scene
+scene_manager.next_scene = opening_scene
 
 
 # 7 game loop
