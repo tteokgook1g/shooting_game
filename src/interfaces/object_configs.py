@@ -49,6 +49,19 @@ class BulletConfig(Config):
         super().__init__(**kwargs)
 
 
+class ItemConfig(Config):
+    '''
+    imgs: tuple[pygame.Surface] | 이미지들
+    speed: tuple[int, int] | 초기 속도
+    boundary_rect: pygame.Rect | 경계 밖으로 벗어나면 삭제
+    item_offset_width: int | 적이 좌우 벽에서 떨어진 정도
+    heal: int | 플레이어가 얻는 체력
+    '''
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+
 class GlobalConfig(Config):
     '''
     screen_width: int\r
@@ -57,7 +70,8 @@ class GlobalConfig(Config):
     screen_rect: pygame.Rect\r
     enemy_offset_width: int # 적이 좌우 벽에서 떨어진 정도\r
     background: pygame.Surface\r
-    text_color: tuple[int, int, int],\r
+    text_color: tuple[int, int, int]\r
+    score: int
     '''
 
     def __init__(self, **kwargs):
