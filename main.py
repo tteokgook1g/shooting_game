@@ -7,14 +7,13 @@
 import pygame
 from src.modules.scene_manager import SceneManager
 from src.modules.scenes.finish_scene import FinishScene
+from src.modules.scenes.open_scene import open_scene
 
 from src.interfaces.object_configs import *
 from src.modules.scenes.game_stage import GameStage
 from src.modules.player import Player
-
 # 2 - 게임 변수 초기화
 pygame.init()
-
 # 3 - 그림과 효과음 삽입
 try:
     # 3.1 - 그림 삽입
@@ -23,9 +22,9 @@ try:
     asteroid1 = pygame.image.load("./img/asteroid01.png")
     asteroid2 = pygame.image.load("./img/asteroid02.png")
     asteroidimgs = (asteroid0, asteroid1, asteroid2)
-    gameover = pygame.image.load("./img/gameover.jpg")
+    gameover_image = pygame.image.load("./img/gameover.jpg")
     bullet_imgs = (pygame.image.load("./img/bullet01.png"),)
-
+    start_image = (pygame.image.load("./img/start_image.png"))
     # 3.2 - 효과음 삽입
     takeoffsound = pygame.mixer.Sound("./audio/takeoff.wav")
     landingsound = pygame.mixer.Sound("./audio/landing.wav")
@@ -41,7 +40,7 @@ SCREEN_WIDTH = 480
 SCREEN_HEIGHT = 640
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 SCREEN_RECT = SCREEN.get_rect()
-ENEMY_OFFSET_WIDTH = 5  # 적이 좌우 벽에서 떨어진 정도
+ENEMY_OFFSET_WIDTH = 5  # 적이 좌우 벽에서 떨어진 정도  
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -92,16 +91,20 @@ config_manager.add_config('bullet', bullet_config)
 
 # scenes
 scene_manager = SceneManager(config_manager=config_manager)
+opening_scene = open_scene(
+    config_manager=config_manager,
+    background=start_image
+)
 stage1 = GameStage(
     enemy_images=config_manager.get_config('enemy', 'imgs'),
     bullet_images=bullet_imgs,
     level_interval=50,
     fps=FPS,
     player=Player(
-        pos=(SCREEN_WIDTH//2, SCREEN_HEIGHT*3//4),
+        pos=(SCREEN_WIDTH//2, SCREEN_HEIGHT*3//4),    
         img=spaceshipimg,
         speed=(5, 5),
-        boundary_rect=SCREEN_RECT,
+        boundary_rect=SCREEN_RECT,     
         power=35,
         health=100
     ),
@@ -110,15 +113,17 @@ stage1 = GameStage(
 finish_scene = FinishScene(
     config_manager=config_manager,
     score=0,
-    background=gameover
+    background=gameover_image
 )
-
+scene_manager.add_scene("opening_scene",opening_scene)
 scene_manager.add_scene('stage1', stage1)
 scene_manager.add_scene('finish_scene', finish_scene)
-scene_manager.current_scene = stage1
-scene_manager.next_scene = stage1
+scene_manager.current_scene = opening_scene
+scene_manager.next_scene = opening_scene
 
-
+opening_scene.add_event_listener(
+    'staet_game', scene_manager.goto_scene,'stage1'
+)
 stage1.add_event_listener(
     'game_over', scene_manager.goto_scene, 'finish_scene')
 
