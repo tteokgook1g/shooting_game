@@ -10,6 +10,7 @@ import random
 class Timer():
     '''
     한 가지 작업에 대해 타이머를 설정하는 클래스
+    시간이 지나면 콜백을 실행한다
     '''
 
     def __init__(self):
@@ -36,14 +37,37 @@ class Timer():
         return False
 
 
+class ManualTimer:
+    '시간이 지나는 것만 계산하고 콜백은 실행하지 않는다'
+
+    def __init__(self):
+        self.time: int = 0  # 남은 프레임 수
+
+    def set_timeout(self, frames: int):
+        self.time = frames
+
+    def update(self):
+        self.time -= 1
+
+
 class TimerManager():
     '''
     타이머들을 관리한다
+    전역에 단 하나의 객체만 존재한다
     '''
 
+    def __new__(cls):
+        if not hasattr(cls, "_instance"):
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
     def __init__(self):
-        self.timers: dict[str, Timer] = {}
-        self.frames_ranges: dict[str, tuple[int, int]] = {}
+        cls = type(self)
+        if not hasattr(cls, "_init"):
+            self.timers: dict[str, Timer] = {}
+            self.manual_timers: dict[str, ManualTimer] = {}
+            self.frames_ranges: dict[str, tuple[int, int]] = {}
+            cls._init = True
 
     def set_timer(self, timer: Timer, timer_name: str, frames_range: tuple[int, int]):
         '''
@@ -55,6 +79,10 @@ class TimerManager():
         '''
         self.timers[timer_name] = timer
         self.frames_ranges[timer_name] = frames_range
+
+    def set_manual_timer(self, timer: ManualTimer, timer_name: str):
+        'timer를 timer_name으로 등록한다'
+        self.manual_timers[timer_name] = timer
 
     def update(self):
         for timer_name in self.timers.copy():
@@ -70,3 +98,6 @@ class TimerManager():
                 else:  # 범위가 설정되어 있지 않으면
                     self.timers.pop(timer_name)
                     self.frames_ranges.pop(timer_name)
+
+        for timer_name in self.manual_timers.copy():
+            self.manual_timers[timer_name].update()

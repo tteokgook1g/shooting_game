@@ -23,9 +23,11 @@ class Boss1(Enemy):
         score: int | 적이 죽으면 받는 점수
         health: int | 체력
         power: int | 공격력, 플레이어와 충돌 시 플레이어가 받는 피해량
+        typeid: str | 적의 종류를 저장한다
         '''
         super().__init__(**kwargs)
         self.configs = config_manager
+        self.max_health = self.health
 
     def summon_spell(self):
         '''
@@ -43,13 +45,29 @@ class Boss1(Enemy):
             boundary_rect=self.configs.get_config('enemy', 'boundary_rect'),
             score=0,
             health=1000000,
-            power=self.configs.get_config('boss1', 'spell_power')
+            power=self.configs.get_config('boss1', 'spell_power'),
+            typeid='boss1_spell1'
         )
 
     def update(self):
-        k = 1/10
+        k = 1/15
         cx = self.get_rect().centerx
         vx = self.speed[0]
         screenx = self.configs.get_config(
             'global', 'screen_rect').centerx
         self.speed = (vx+k*(screenx-cx), 0)
+
+    def draw(self, screen: pygame.Surface):
+        super().draw(screen)
+
+        # 체력 바
+        bar_width, bar_height = 200, 10
+        bar = pygame.Surface((bar_width, bar_height))
+        bar.fill((255, 0, 0))
+        pygame.draw.rect(bar, (0, 255, 0), [
+                         0, 0, bar_width * self.health // self.max_health, bar_height])
+
+        bar_rect = bar.get_rect()
+        screen_rect = screen.get_rect()
+        bar_rect.center = screen_rect.centerx, 10
+        screen.blit(bar, bar_rect)
