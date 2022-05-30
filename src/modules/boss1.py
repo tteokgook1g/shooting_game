@@ -23,6 +23,7 @@ class Boss1(Enemy):
         score: int | 적이 죽으면 받는 점수
         health: int | 체력
         power: int | 공격력, 플레이어와 충돌 시 플레이어가 받는 피해량
+        typeid: str | 적의 종류를 저장한다
         '''
         super().__init__(**kwargs)
         self.configs = config_manager
@@ -44,7 +45,8 @@ class Boss1(Enemy):
             boundary_rect=self.configs.get_config('enemy', 'boundary_rect'),
             score=0,
             health=1000000,
-            power=self.configs.get_config('boss1', 'spell_power')
+            power=self.configs.get_config('boss1', 'spell_power'),
+            typeid='boss1_spell1'
         )
 
     def update(self):

@@ -119,7 +119,7 @@ player = Player(
     speed=(5, 5),
     boundary_rect=SCREEN_RECT,
     weapon=None,
-    power=100,
+    power=50,
     health=200
 )
 

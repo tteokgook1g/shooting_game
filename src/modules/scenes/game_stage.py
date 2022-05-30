@@ -90,16 +90,18 @@ class GameStage(Scene):
         offset = self.configs.get_config('enemy', 'enemy_offset_width')
         screen_width = self.configs.get_config('global', 'screen_width')
         enemy_imgs = self.configs.get_config('enemy', 'imgs')
+        enemyid = random.randint(0, len(enemy_imgs)-1)
 
         new_enemy = Enemy(
             pos=(random.randint(offset, screen_width-offset), 0),
-            img=enemy_imgs[random.randint(0, len(enemy_imgs)-1)],
+            img=enemy_imgs[enemyid],
             speed=self.configs.get_config('enemy', 'speed'),
             boundary_rect=self.configs.get_config(
                 'global', 'screen_rect'),
             score=self.configs.get_config('enemy', 'score'),
             health=self.configs.get_config('enemy', 'health'),
-            power=self.configs.get_config('enemy', 'power')
+            power=self.configs.get_config('enemy', 'power'),
+            typeid=f'default{enemyid}'
         )
         new_enemy.add_event_listener('delete', self.delete_enemy, new_enemy)
         new_enemy.add_event_listener(
@@ -110,10 +112,8 @@ class GameStage(Scene):
 
     def make_bullet(self):
         '''
-        callback of bullet_timer
-
+        callback of weapon
         새로운 총알을 생성한다
-        self.BULLET_IMAGES 중 랜덤 이미지를 사용한다
         '''
 
         # get config
@@ -141,10 +141,8 @@ class GameStage(Scene):
 
     def make_shotgun(self):
         '''
-        callback of bullet_timer
-
-        새로운 총알을 생성한다
-        self.BULLET_IMAGES 중 랜덤 이미지를 사용한다
+        callback of weapon
+        새로운 총알 여러 개를 생성한다
         '''
         # get config
         shotgun_img: pygame.Surface = self.configs.get_config(
@@ -157,15 +155,19 @@ class GameStage(Scene):
         img_rect.bottom = player_rect.top
         img_rect.centerx = player_rect.centerx
 
+        speed = self.configs.get_config('bullet', 'speed')
+        boundary_rect = self.configs.get_config(
+            'bullet', 'boundary_rect')
+
         for i in range(-2, 3):
             new_rect = img_rect.copy()
             new_rect.left = img_rect.left + (img_rect.width + 10)*i
+
             new_bullet = Bullet(
                 pos=new_rect.topleft,
                 img=shotgun_img,
-                speed=self.configs.get_config('bullet', 'speed'),
-                boundary_rect=self.configs.get_config(
-                    'bullet', 'boundary_rect'),
+                speed=(speed[0]+i*2, speed[1]),
+                boundary_rect=boundary_rect,
                 power=self.player.power//4
             )
             new_bullet.add_event_listener(
@@ -218,7 +220,8 @@ class GameStage(Scene):
             boundary_rect=self.configs.get_config('global', 'screen_rect'),
             score=self.configs.get_config('boss1', 'boss1_score'),
             health=self.configs.get_config('boss1', 'boss1_health'),
-            power=1000000
+            power=1000000,
+            typeid='stage1_boss1'
         )
         self.boss.add_event_listener('delete', self.stage_clear)
         self.boss.add_event_listener(

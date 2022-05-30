@@ -26,11 +26,13 @@ class Enemy(Entity):
         score: int | 적이 죽으면 받는 점수
         health: int | 체력
         power: int | 공격력, 플레이어와 충돌 시 플레이어가 받는 피해량
+        typeid: str | 적의 종류를 저장한다
         '''
         super().__init__(**kwargs)
         self.health = kwargs['health']
         self.score = kwargs['score']
         self.power = kwargs['power']
+        self.typeid = kwargs['typeid']
 
     def do_when_collide_with_player(self, player: Player):
         '''
