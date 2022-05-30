@@ -35,7 +35,7 @@ try:
     gameover_image = pygame.image.load("./img/gameover.jpg")
 
     bullet_imgs = (pygame.image.load("./img/bullet01.png"),)
-    start_image = (pygame.image.load("./img/start_image.png"))
+    start_image = (pygame.image.load("./img/opening_scene.png"))
     start_image = pygame.transform.scale(
         start_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
