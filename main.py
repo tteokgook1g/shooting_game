@@ -9,13 +9,14 @@ from src.modules.player_weapon import *
 from src.modules.scenes.start_scene import StartScene
 from src.modules.scene_manager import SceneManager
 from src.modules.scenes.finish_scene import FinishScene
+from src.modules.scenes.open_scene import open_scene
 
 from src.interfaces.object_configs import *
 from src.modules.scenes.game_stage import GameStage
 from src.modules.player import Player
 
-pygame.init()
 
+pygame.init()
 # 3 - 그림과 효과음 삽입
 try:
     # 3.1 - 그림 삽입
@@ -26,6 +27,10 @@ try:
     asteroid2 = pygame.image.load("./img/asteroid02.png")
     asteroidimgs = (asteroid0, asteroid1, asteroid2)
     gameover_image = pygame.image.load("./img/gameover.jpg")
+
+    bullet_imgs = (pygame.image.load("./img/bullet01.png"),)
+    start_image = (pygame.image.load("./img/start_image.png"))
+
     bullet_img = pygame.image.load("./img/bullet01.png")
     shotgun_img = pygame.image.load("./img/shotgun01.png")
     item_imgs = (pygame.image.load("./img/item01.png"),)
@@ -45,6 +50,8 @@ SCREEN_WIDTH = 480
 SCREEN_HEIGHT = 640
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 SCREEN_RECT = SCREEN.get_rect()
+ENEMY_OFFSET_WIDTH = 5  # 적이 좌우 벽에서 떨어진 정도  
+
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -126,6 +133,25 @@ player = Player(
 
 # scenes
 scene_manager = SceneManager(config_manager=config_manager)
+
+opening_scene = open_scene(
+    config_manager=config_manager,
+    background=start_image
+)
+stage1 = GameStage(
+    enemy_images=config_manager.get_config('enemy', 'imgs'),
+    bullet_images=bullet_imgs,
+    level_interval=50,
+    fps=FPS,
+    player=Player(
+        pos=(SCREEN_WIDTH//2, SCREEN_HEIGHT*3//4),    
+        img=spaceshipimg,
+        speed=(5, 5),
+        boundary_rect=SCREEN_RECT,     
+        power=35,
+        health=100
+    ),
+
 start_bg = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 start_bg.fill(WHITE)
 start_scene = StartScene(
@@ -154,6 +180,19 @@ finish_scene = FinishScene(
     score=0,
     background=gameover_image
 )
+
+scene_manager.add_scene("opening_scene",opening_scene)
+scene_manager.add_scene('stage1', stage1)
+scene_manager.add_scene('finish_scene', finish_scene)
+scene_manager.current_scene = opening_scene
+scene_manager.next_scene = opening_scene
+
+opening_scene.add_event_listener(
+    'staet_game', scene_manager.goto_scene,'stage1'
+)
+stage1.add_event_listener(
+    'game_over', scene_manager.goto_scene, 'finish_scene')
+
 scene_manager.add_scene('finish_scene', finish_scene)
 
 scene_manager.current_scene = start_scene
