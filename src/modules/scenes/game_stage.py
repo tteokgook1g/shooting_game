@@ -1,14 +1,14 @@
 import pygame
 
-from ..boss1 import Boss1
-
 from ...interfaces.object_configs import *
 from ...interfaces.scene import Scene
 from ...interfaces.timer import *
+from ..boss1 import Boss1
 from ..bullet import Bullet
 from ..enemy import Enemy
-from ..player import Player
 from ..item import Item
+from ..player import Player
+from ..player_weapon import *
 from ..render_items import *
 
 
@@ -24,7 +24,6 @@ class GameStage(Scene):
         enemy_images: tuple[pygame.Surface],
         bullet_images: tuple[pygame.Surface],
         level_interval: int,
-        fps: int,
         player: Player,
         config_manager: ConfigManager
     ):
@@ -32,7 +31,6 @@ class GameStage(Scene):
         enemy_images: tuple[pygame.Surface] | 적 이미지
         bullet_images: tuple[pygame.Surface] | 총알 이미지
         level_interval: int | 레벨의 점수 간격
-        player_power: int | 플레이어의 공격력
         '''
         super().__init__(config_manager)
 
@@ -46,15 +44,17 @@ class GameStage(Scene):
         self.level_interval = level_interval
         self.next_level_score = level_interval
 
+        # 플레이어 무기
+        default_weapon = DefaultWeapon(
+            cooltime=10, make_bullet=self.make_bullet)
+        player_weapon = ShotgunDecorator(default_weapon, 30, self.make_shotgun)
+        self.player.set_weapon(player_weapon)
+
         # 타이머
         self.timer_manager = TimerManager()
         enemy_timer = Timer()
         enemy_timer.set_timeout(0, self.make_enemy)
         self.timer_manager.set_timer(enemy_timer, 'enemy_timer', (5, 20))
-
-        bullet_timer = Timer()
-        bullet_timer.set_timeout(0, self.make_bullet)
-        self.timer_manager.set_timer(bullet_timer, 'bullet_timer', (10, 10))
 
         item_timer = Timer()
         item_timer.set_timeout(0, self.make_item)
@@ -115,34 +115,62 @@ class GameStage(Scene):
         새로운 총알을 생성한다
         self.BULLET_IMAGES 중 랜덤 이미지를 사용한다
         '''
-        if pygame.key.get_pressed()[pygame.K_SPACE]:
-            # get config
-            bullet_imgs: tuple[pygame.Surface] = self.configs.get_config(
-                'bullet', 'imgs')
 
-            player_rect = self.player.get_rect()
-            img_bullet = bullet_imgs[random.randint(0, len(bullet_imgs)-1)]
+        # get config
+        bullet_img: pygame.Surface = self.configs.get_config(
+            'bullet', 'bullet_img')
 
-            # 총알이 플레이어을 중앙 위에 생기도록 설정
-            img_rect = img_bullet.get_rect()
-            img_rect.bottom = player_rect.top
-            img_rect.centerx = player_rect.centerx
+        player_rect = self.player.get_rect()
 
+        # 총알이 플레이어을 중앙 위에 생기도록 설정
+        img_rect = bullet_img.get_rect()
+        img_rect.bottom = player_rect.top
+        img_rect.centerx = player_rect.centerx
+
+        new_bullet = Bullet(
+            pos=img_rect.topleft,
+            img=bullet_img,
+            speed=self.configs.get_config('bullet', 'speed'),
+            boundary_rect=self.configs.get_config(
+                'bullet', 'boundary_rect'),
+            power=self.player.power
+        )
+        new_bullet.add_event_listener(
+            'delete', self.delete_bullet, new_bullet)
+        self.list_bullets.append(new_bullet)
+
+    def make_shotgun(self):
+        '''
+        callback of bullet_timer
+
+        새로운 총알을 생성한다
+        self.BULLET_IMAGES 중 랜덤 이미지를 사용한다
+        '''
+        # get config
+        shotgun_img: pygame.Surface = self.configs.get_config(
+            'bullet', 'shotgun_img')
+
+        player_rect = self.player.get_rect()
+
+        # 총알이 플레이어을 중앙 위에 생기도록 설정
+        img_rect = shotgun_img.get_rect()
+        img_rect.bottom = player_rect.top
+        img_rect.centerx = player_rect.centerx
+
+        for i in range(-2, 3):
+            new_rect = img_rect.copy()
+            new_rect.left = img_rect.left + (img_rect.width + 10)*i
             new_bullet = Bullet(
-                pos=img_rect.topleft,
-                img=img_bullet,
+                pos=new_rect.topleft,
+                img=shotgun_img,
                 speed=self.configs.get_config('bullet', 'speed'),
                 boundary_rect=self.configs.get_config(
                     'bullet', 'boundary_rect'),
-                power=self.player.power
+                power=self.player.power//4
             )
             new_bullet.add_event_listener(
                 'delete', self.delete_bullet, new_bullet)
             self.list_bullets.append(new_bullet)
-
-            return True
-        else:
-            return False
 
     def make_item(self):
         '''
@@ -186,7 +214,7 @@ class GameStage(Scene):
             self.configs,
             pos=img_rect.topleft,
             img=self.configs.get_config('boss1', 'boss1_img'),
-            speed=(30, 0),
+            speed=self.configs.get_config('boss1', 'boss1_speed'),
             boundary_rect=self.configs.get_config('global', 'screen_rect'),
             score=self.configs.get_config('boss1', 'boss1_score'),
             health=self.configs.get_config('boss1', 'boss1_health'),
@@ -316,6 +344,7 @@ class GameStage(Scene):
 
         # 랜덤 시간마다 적 생성
         # 일정 시간마다 총알 생성
+        self.player.attack()
         self.timer_manager.update()
 
         # 플레이어와 엔티티 업데이트

@@ -4,6 +4,8 @@ class Player
 
 import pygame
 
+from .player_weapon import PlayerWeapon
+
 from ..interfaces.event_listener import EventListener
 
 
@@ -18,6 +20,7 @@ class Player(EventListener):
         img: pygame.Surface | 이미지
         speed: (speed_x, speed_y) | 초기 속도
         boundary_rect: pygame.Rect | 경계 밖으로 벗어날 수 없음
+        weapon: PlayerWeapon | 플레이어의 무기
         power: int | 공격력
         health: int | 체력
         '''
@@ -28,7 +31,8 @@ class Player(EventListener):
         self.img: pygame.Surface = kwargs['img']
         self.speed: list[int, int] = list(kwargs['speed'][:])
         self.boundary_rect: pygame.Rect = kwargs['boundary_rect']
-        self.power: int = kwargs['power']
+        self.weapon: PlayerWeapon = kwargs['weapon']
+        self.power = kwargs['power']
         self.health: int = kwargs['health']
 
     def add_health(self, health):
@@ -91,6 +95,12 @@ class Player(EventListener):
         rect.left = self.pos[0]
         rect.top = self.pos[1]
         return rect
+
+    def set_weapon(self, weapon: PlayerWeapon):
+        self.weapon = weapon
+
+    def attack(self):
+        self.weapon.attack()
 
     def draw(self, screen: pygame.Surface):
         '''

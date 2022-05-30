@@ -5,6 +5,7 @@
 # 1 - 모듈 임포트
 
 import pygame
+from src.modules.player_weapon import *
 from src.modules.scenes.start_scene import StartScene
 from src.modules.scene_manager import SceneManager
 from src.modules.scenes.finish_scene import FinishScene
@@ -13,7 +14,6 @@ from src.interfaces.object_configs import *
 from src.modules.scenes.game_stage import GameStage
 from src.modules.player import Player
 
-# 2 - 게임 변수 초기화
 pygame.init()
 
 # 3 - 그림과 효과음 삽입
@@ -25,8 +25,9 @@ try:
     asteroid1 = pygame.image.load("./img/asteroid01.png")
     asteroid2 = pygame.image.load("./img/asteroid02.png")
     asteroidimgs = (asteroid0, asteroid1, asteroid2)
-    gameover = pygame.image.load("./img/gameover.jpg")
-    bullet_imgs = (pygame.image.load("./img/bullet01.png"),)
+    gameover_image = pygame.image.load("./img/gameover.jpg")
+    bullet_img = pygame.image.load("./img/bullet01.png")
+    shotgun_img = pygame.image.load("./img/shotgun01.png")
     item_imgs = (pygame.image.load("./img/item01.png"),)
     boss1_spell_img = pygame.image.load("./img/boss1_spell1.png")
     boss1_img = pygame.image.load("./img/boss1.png")
@@ -82,7 +83,8 @@ enemy_config = EnemyConfig(
     power=50
 )
 bullet_config = BulletConfig(
-    imgs=bullet_imgs,
+    bullet_img=bullet_img,
+    shotgun_img=shotgun_img,
     speed=(0, -10),
     boundary_rect=SCREEN_RECT
 )
@@ -100,7 +102,8 @@ boss_config = Config(
     boss1_img=boss1_img,
     boss1_health=500,
     boss1_score=2000,
-    boss1_summon_delay=150
+    boss1_summon_delay=150,
+    boss1_speed=(20, 0)
 )
 
 config_manager.add_config('global', global_config)
@@ -108,6 +111,17 @@ config_manager.add_config('enemy', enemy_config)
 config_manager.add_config('bullet', bullet_config)
 config_manager.add_config('item', item_config)
 config_manager.add_config('boss1', boss_config)
+
+# player
+player = Player(
+    pos=(SCREEN_WIDTH//2, SCREEN_HEIGHT*3//4),
+    img=player_img,
+    speed=(5, 5),
+    boundary_rect=SCREEN_RECT,
+    weapon=None,
+    power=100,
+    health=200
+)
 
 
 # scenes
@@ -124,17 +138,9 @@ scene_manager.add_scene('start_scene', start_scene)
 
 stage1 = GameStage(
     enemy_images=config_manager.get_config('enemy', 'imgs'),
-    bullet_images=bullet_imgs,
+    bullet_images=bullet_img,
     level_interval=200,
-    fps=FPS,
-    player=Player(
-        pos=(SCREEN_WIDTH//2, SCREEN_HEIGHT*3//4),
-        img=player_img,
-        speed=(5, 5),
-        boundary_rect=SCREEN_RECT,
-        power=100,
-        health=200
-    ),
+    player=player,
     config_manager=config_manager
 )
 stage1.add_event_listener(
@@ -146,7 +152,7 @@ scene_manager.add_scene('stage1', stage1)
 finish_scene = FinishScene(
     config_manager=config_manager,
     score=0,
-    background=gameover
+    background=gameover_image
 )
 scene_manager.add_scene('finish_scene', finish_scene)
 
