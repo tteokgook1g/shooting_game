@@ -42,7 +42,7 @@ class Boss1(Enemy):
             pos=img_rect.topleft,
             img=img,
             speed=self.configs.get_config('boss1', 'spell_speed'),
-            boundary_rect=self.configs.get_config('enemy', 'boundary_rect'),
+            boundary_rect=self.configs.get_config('stage1', 'entity_boundary'),
             score=0,
             health=1000000,
             power=self.configs.get_config('boss1', 'spell_power'),

@@ -75,15 +75,21 @@ global_config = GlobalConfig(
     screen_height=640,
     screen=SCREEN,
     screen_rect=SCREEN_RECT,
-    stage1_bg=background,
     text_color=BLACK,
     fps=FPS,
     score=0
 )
+stage1_config = Config(
+    background=background,
+    entity_boundary=SCREEN_RECT
+)
+stage2_config = Config(
+    background=background,
+    entity_boundary=pygame.Rect(0, 0, 1000, 1000)
+)
 enemy_config = EnemyConfig(
     imgs=asteroidimgs,
     speed=(0, 10),
-    boundary_rect=SCREEN_RECT,
     enemy_offset_width=5,  # 적이 좌우 벽에서 떨어진 정도
     score=20,
     health=100,
@@ -93,12 +99,10 @@ bullet_config = BulletConfig(
     bullet_img=bullet_img,
     shotgun_img=shotgun_img,
     speed=(0, -10),
-    boundary_rect=SCREEN_RECT
 )
 item_config = ItemConfig(
     imgs=item_imgs,
     speed=(0, 10),
-    boundary_rect=SCREEN_RECT,
     item_offset_width=20,
     heal=10
 )
@@ -114,6 +118,8 @@ boss_config = Config(
 )
 
 config_manager.add_config('global', global_config)
+config_manager.add_config('stage1', stage1_config)
+config_manager.add_config('stage2', stage2_config)
 config_manager.add_config('enemy', enemy_config)
 config_manager.add_config('bullet', bullet_config)
 config_manager.add_config('item', item_config)
@@ -134,25 +140,18 @@ player = Player(
 # scenes
 scene_manager = SceneManager(config_manager=config_manager)
 
+# opening_scene
 opening_scene = OpeningScene(
     config_manager=config_manager,
     background=start_image
 )
-stage1 = GameStage(
-    enemy_images=config_manager.get_config('enemy', 'imgs'),
-    bullet_images=bullet_imgs,
-    level_interval=50,
-    player=player,
-    config_manager=config_manager)
-
 
 opening_scene.add_event_listener(
     'start_game', scene_manager.goto_scene, 'stage1')
 scene_manager.add_scene('start_scene', opening_scene)
 
+# stage1
 stage1 = GameStage(
-    enemy_images=config_manager.get_config('enemy', 'imgs'),
-    bullet_images=bullet_img,
     level_interval=200,
     player=player,
     config_manager=config_manager
@@ -163,26 +162,15 @@ stage1.add_event_listener(
     'stage_clear', scene_manager.goto_scene, 'finish_scene')
 scene_manager.add_scene('stage1', stage1)
 
+# game_over_scene
 finish_scene = FinishScene(
     config_manager=config_manager,
     score=0,
     background=gameover_image
 )
-
-scene_manager.add_scene("opening_scene", opening_scene)
-scene_manager.add_scene('stage1', stage1)
-scene_manager.add_scene('finish_scene', finish_scene)
-scene_manager.current_scene = opening_scene
-scene_manager.next_scene = opening_scene
-
-opening_scene.add_event_listener(
-    'start_game', scene_manager.goto_scene, 'stage1'
-)
-stage1.add_event_listener(
-    'game_over', scene_manager.goto_scene, 'finish_scene')
-
 scene_manager.add_scene('finish_scene', finish_scene)
 
+# start with opening_scene
 scene_manager.current_scene = opening_scene
 scene_manager.next_scene = opening_scene
 

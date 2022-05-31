@@ -21,15 +21,11 @@ class GameStage(Scene):
 
     def __init__(
         self,
-        enemy_images: tuple[pygame.Surface],
-        bullet_images: tuple[pygame.Surface],
         level_interval: int,
         player: Player,
         config_manager: ConfigManager
     ):
         '''
-        enemy_images: tuple[pygame.Surface] | 적 이미지
-        bullet_images: tuple[pygame.Surface] | 총알 이미지
         level_interval: int | 레벨의 점수 간격
         '''
         super().__init__(config_manager)
@@ -70,10 +66,6 @@ class GameStage(Scene):
             'boss1', 'boss1_summon_delay'), self.summon_boss)
         self.timer_manager.set_timer(summon_boss_timer, 'summon_boss', None)
 
-        # 상수
-        self.enemy_images = enemy_images
-        self.bullet_images = bullet_images
-
         # add event_listener
         self.player.add_event_listener('delete', self.game_over)
 
@@ -97,7 +89,7 @@ class GameStage(Scene):
             img=enemy_imgs[enemyid],
             speed=self.configs.get_config('enemy', 'speed'),
             boundary_rect=self.configs.get_config(
-                'global', 'screen_rect'),
+                'stage1', 'entity_boundary'),
             score=self.configs.get_config('enemy', 'score'),
             health=self.configs.get_config('enemy', 'health'),
             power=self.configs.get_config('enemy', 'power'),
@@ -132,7 +124,7 @@ class GameStage(Scene):
             img=bullet_img,
             speed=self.configs.get_config('bullet', 'speed'),
             boundary_rect=self.configs.get_config(
-                'bullet', 'boundary_rect'),
+                'stage1', 'entity_boundary'),
             power=self.player.power
         )
         new_bullet.add_event_listener(
@@ -157,7 +149,7 @@ class GameStage(Scene):
 
         speed = self.configs.get_config('bullet', 'speed')
         boundary_rect = self.configs.get_config(
-            'bullet', 'boundary_rect')
+            'stage1', 'entity_boundary')
 
         for i in range(-2, 3):
             new_rect = img_rect.copy()
@@ -189,7 +181,7 @@ class GameStage(Scene):
             img=item_imgs[random.randint(0, len(item_imgs)-1)],
             speed=self.configs.get_config('item', 'speed'),
             boundary_rect=self.configs.get_config(
-                'global', 'screen_rect'),
+                'stage1', 'entity_boundary'),
             heal=self.configs.get_config('item', 'heal')
         )
         new_item.add_event_listener('delete', self.delete_item, new_item)
@@ -217,7 +209,7 @@ class GameStage(Scene):
             pos=img_rect.topleft,
             img=self.configs.get_config('boss1', 'boss1_img'),
             speed=self.configs.get_config('boss1', 'boss1_speed'),
-            boundary_rect=self.configs.get_config('global', 'screen_rect'),
+            boundary_rect=self.configs.get_config('stage1', 'entity_boundary'),
             score=self.configs.get_config('boss1', 'boss1_score'),
             health=self.configs.get_config('boss1', 'boss1_health'),
             power=1000000,
@@ -307,7 +299,7 @@ class GameStage(Scene):
 
         # get config
         BACKGROUND = self.configs.get_config(
-            'global', 'stage1_bg')
+            'stage1', 'background')
         TEXT_COLOR = self.configs.get_config('global', 'text_color')
 
         screen.blit(BACKGROUND, (0, 0))
