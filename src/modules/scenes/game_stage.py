@@ -1,8 +1,9 @@
 import pygame
 
-from ...interfaces.object_configs import *
+from ...interfaces.object_configs import ConfigManager
 from ...interfaces.scene import Scene
 from ...interfaces.timer import *
+from ...interfaces.entity_manager import EntityManager, EntityManagerFactory
 from ..boss1 import Boss1
 from ..bullet import Bullet
 from ..enemy import Enemy
@@ -23,7 +24,6 @@ class GameStage(Scene):
     def __init__(
         self,
         level_interval: int,
-        player: Player,
         config_manager: ConfigManager
     ):
         '''
@@ -32,7 +32,7 @@ class GameStage(Scene):
         super().__init__(config_manager)
 
         # 변수
-        self.player = player
+        self.player = None
         self.boss: Boss1 = None
         self.list_enemies: list[Enemy] = []
         self.list_bullets: list[Bullet] = []
@@ -42,6 +42,7 @@ class GameStage(Scene):
         self.next_level_score = level_interval
 
     def start_scene(self):
+        self.player = Player(self.configs)
         # 플레이어 무기
         default_weapon = DefaultWeapon(
             cooltime=10, make_bullet=self.make_bullet)
@@ -126,7 +127,7 @@ class GameStage(Scene):
         new_bullet = Bullet(
             pos=img_rect.topleft,
             img=bullet_img,
-            speed=self.configs.get_config('bullet', 'speed'),
+            speed=(0, -self.configs.get_config('bullet', 'speed')),
             boundary_rect=self.configs.get_config(
                 'stage1', 'entity_boundary'),
             power=self.player.power
@@ -162,7 +163,7 @@ class GameStage(Scene):
             new_bullet = Bullet(
                 pos=new_rect.topleft,
                 img=shotgun_img,
-                speed=(speed[0]+i*2, speed[1]),
+                speed=(i*2, -speed),
                 boundary_rect=boundary_rect,
                 power=self.player.power//4
             )
@@ -183,7 +184,7 @@ class GameStage(Scene):
         new_item = Item(
             pos=(random.randint(offset, screen_width-offset), 0),
             img=item_imgs[random.randint(0, len(item_imgs)-1)],
-            speed=self.configs.get_config('item', 'speed'),
+            speed=(0, self.configs.get_config('item', 'speed')),
             boundary_rect=self.configs.get_config(
                 'stage1', 'entity_boundary'),
             heal=self.configs.get_config('item', 'heal')
@@ -212,7 +213,7 @@ class GameStage(Scene):
             self.configs,
             pos=img_rect.topleft,
             img=self.configs.get_config('boss1', 'boss1_img'),
-            speed=self.configs.get_config('boss1', 'boss1_speed'),
+            speed=(self.configs.get_config('boss1', 'boss1_speed'), 0),
             boundary_rect=self.configs.get_config('stage1', 'entity_boundary'),
             score=self.configs.get_config('boss1', 'boss1_score'),
             health=self.configs.get_config('boss1', 'boss1_health'),
@@ -252,6 +253,8 @@ class GameStage(Scene):
 
     def stage_clear(self):
         self.configs.set_config('global', 'score', self.score)
+        self.configs.set_config('player', 'health', self.player.health)
+        self.timer_manager.clear_all_timers()
         self.call_event('stage_clear')
 
     # ------------------------------------------------ callbacks

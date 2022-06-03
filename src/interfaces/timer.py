@@ -84,6 +84,11 @@ class TimerManager():
         'timer를 timer_name으로 등록한다'
         self.manual_timers[timer_name] = timer
 
+    def clear_all_timers(self):
+        self.timers.clear()
+        self.manual_timers.clear()
+        self.frames_ranges.clear()
+
     def update(self):
         for timer_name in self.timers.copy():
             timer = self.timers[timer_name]

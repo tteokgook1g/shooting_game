@@ -1,3 +1,4 @@
+from pygame import Vector2
 import pygame
 
 from ...interfaces.object_configs import *
@@ -23,7 +24,6 @@ class AroundStage(Scene):
     def __init__(
         self,
         level_interval: int,
-        player: Player,
         config_manager: ConfigManager
     ):
         '''
@@ -32,7 +32,7 @@ class AroundStage(Scene):
         super().__init__(config_manager)
 
         # 변수
-        self.player = player
+        self.player = None
         self.boss: Boss1 = None
         self.list_enemies: list[Enemy] = []
         self.list_bullets: list[Bullet] = []
@@ -42,6 +42,9 @@ class AroundStage(Scene):
         self.next_level_score = level_interval
 
     def start_scene(self):
+        self.player = Player(self.configs)
+        self.summon_boss()
+
         self.player.boundary_rect = self.configs.get_config(
             'stage2', 'entity_boundary')
         # 플레이어 무기
@@ -55,7 +58,7 @@ class AroundStage(Scene):
         enemy_timer = Timer()
         enemy_timer.set_timeout(0, self.make_enemy)
         self.timer_manager.set_timer(
-            enemy_timer, 'stage2_enemy_timer', (5, 20))
+            enemy_timer, 'stage2_enemy_timer', (30, 60))
 
         item_timer = Timer()
         item_timer.set_timeout(0, self.make_item)
@@ -65,12 +68,6 @@ class AroundStage(Scene):
         boss_spell_timer.set_timeout(0, self.make_boss_spell)
         self.timer_manager.set_timer(
             boss_spell_timer, 'stage2_boss_spell_timer', (35, 50))
-
-        summon_boss_timer = Timer()
-        summon_boss_timer.set_timeout(self.configs.get_config(
-            'boss1', 'boss1_summon_delay'), self.summon_boss)
-        self.timer_manager.set_timer(
-            summon_boss_timer, 'stage2_summon_boss_timer', None)
 
         # add event_listener
         self.player.add_event_listener('delete', self.game_over)
@@ -88,10 +85,9 @@ class AroundStage(Scene):
         enemy_imgs = self.configs.get_config('enemy', 'imgs')
         enemyid = random.randint(0, len(enemy_imgs)-1)
 
-        camera_rect = self.get_camera_rect()
-
         new_enemy = Enemy(
-            pos=(random.randint(camera_rect.left, camera_rect.right), 0),
+            pos=(Vector2(self.boss.get_rect().center) +
+                 Vector2(100, 0).rotate(random.randint(0, 360)))[:],
             img=enemy_imgs[enemyid],
             speed=(0, self.configs.get_config('enemy', 'speed')),
             boundary_rect=self.configs.get_config(
@@ -128,7 +124,7 @@ class AroundStage(Scene):
         new_bullet = Bullet(
             pos=img_rect.topleft,
             img=bullet_img,
-            speed=self.configs.get_config('bullet', 'speed'),
+            speed=(0, -self.configs.get_config('bullet', 'speed')),
             boundary_rect=self.configs.get_config(
                 'stage2', 'entity_boundary'),
             power=self.player.power
@@ -142,6 +138,8 @@ class AroundStage(Scene):
         callback of weapon
         새로운 총알 여러 개를 생성한다
         '''
+        NUM_OF_BULLET = 24
+
         # get config
         shotgun_img: pygame.Surface = self.configs.get_config(
             'bullet', 'shotgun_img')
@@ -157,14 +155,17 @@ class AroundStage(Scene):
         boundary_rect = self.configs.get_config(
             'stage2', 'entity_boundary')
 
-        for i in range(-2, 3):
+        for i in range(NUM_OF_BULLET):
+            delta_pos = Vector2((5, 0))
+            delta_pos.rotate_ip(360*i/NUM_OF_BULLET)
+            new_pos = (Vector2(player_rect.center)+delta_pos)[:]
             new_rect = img_rect.copy()
-            new_rect.left = img_rect.left + (img_rect.width + 10)*i
+            new_rect.center = new_pos
 
             new_bullet = Bullet(
                 pos=new_rect.topleft,
                 img=shotgun_img,
-                speed=(speed[0]+i*2, speed[1]),
+                speed=(speed*delta_pos.normalize())[:],
                 boundary_rect=boundary_rect,
                 power=self.player.power//4
             )
@@ -185,7 +186,7 @@ class AroundStage(Scene):
         new_item = Item(
             pos=(random.randint(offset, screen_width-offset), 0),
             img=item_imgs[random.randint(0, len(item_imgs)-1)],
-            speed=self.configs.get_config('item', 'speed'),
+            speed=(0, self.configs.get_config('item', 'speed')),
             boundary_rect=self.configs.get_config(
                 'stage2', 'entity_boundary'),
             heal=self.configs.get_config('item', 'heal')
@@ -214,11 +215,11 @@ class AroundStage(Scene):
             self.configs,
             pos=img_rect.topleft,
             img=self.configs.get_config('boss1', 'boss1_img'),
-            speed=self.configs.get_config('boss1', 'boss1_speed'),
+            speed=(self.configs.get_config('boss1', 'boss1_speed'), 0),
             boundary_rect=self.configs.get_config('stage2', 'entity_boundary'),
             score=self.configs.get_config('boss1', 'boss1_score'),
             health=self.configs.get_config('boss1', 'boss1_health'),
-            power=1000000,
+            power=1,
             typeid='stage2_boss1'
         )
         self.boss.add_event_listener('delete', self.stage_clear)
@@ -261,7 +262,7 @@ class AroundStage(Scene):
     def update_enemy_speed(self):
         default_speed = self.configs.get_config('enemy', 'speed') // 3
         for enemy in self.list_enemies:
-            direction = get_direction(enemy.pos, self.player.pos)
+            direction = get_direction(enemy.pos, self.player.get_pos())
             enemy.speed = [direction[0] * default_speed,
                            direction[1] * default_speed]
 

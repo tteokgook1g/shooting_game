@@ -1,10 +1,8 @@
 # 5.4 class Bullet
 
 from typing import Callable
-import pygame
 
-
-from .entity import Entity
+from ..interfaces.entity import Entity
 from .enemy import Enemy
 
 

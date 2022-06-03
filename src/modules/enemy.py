@@ -1,10 +1,9 @@
 # 5.3 class Enemy
 
 from typing import Callable
-import pygame
 
 
-from .entity import Entity
+from ..interfaces.entity import Entity
 from .player import Player
 
 

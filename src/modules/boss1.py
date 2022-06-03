@@ -4,7 +4,7 @@ class Boss1
 import pygame
 
 from .enemy import Enemy
-from .entity import Entity
+from .player import Player
 from ..interfaces.object_configs import ConfigManager
 
 
@@ -41,7 +41,7 @@ class Boss1(Enemy):
         return Enemy(
             pos=img_rect.topleft,
             img=img,
-            speed=self.configs.get_config('boss1', 'spell_speed'),
+            speed=(0, self.configs.get_config('boss1', 'spell_speed')),
             boundary_rect=self.configs.get_config('stage1', 'entity_boundary'),
             score=0,
             health=1000000,
@@ -49,25 +49,30 @@ class Boss1(Enemy):
             typeid='boss1_spell1'
         )
 
+    def do_when_collide_with_player(self, player: Player):
+        '''
+        플레이어의 체력을 차감한다
+        '''
+        player.add_health(-self.power)
+
     def update(self):
         k = 1/15
         cx = self.get_rect().centerx
-        vx = self.speed[0]
         screenx = self.configs.get_config(
             'global', 'screen_rect').centerx
-        self.speed = (vx+k*(screenx-cx), 0)
+        self.speed[0] += k*(screenx-cx)
 
     def draw(self, screen: pygame.Surface):
         super().draw(screen)
 
         # 체력 바
-        bar_width, bar_height = 200, 10
+        bar_width, bar_height = 50, 7
         bar = pygame.Surface((bar_width, bar_height))
         bar.fill((255, 0, 0))
         pygame.draw.rect(bar, (0, 255, 0), [
                          0, 0, bar_width * self.health // self.max_health, bar_height])
 
         bar_rect = bar.get_rect()
-        screen_rect = screen.get_rect()
-        bar_rect.center = screen_rect.centerx, 10
+        boss_rect = self.get_rect()
+        bar_rect.center = boss_rect.centerx, boss_rect.bottom+10
         screen.blit(bar, bar_rect)

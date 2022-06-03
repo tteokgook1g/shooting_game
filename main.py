@@ -71,7 +71,8 @@ fpsClock = pygame.time.Clock()
 
 # object config
 config_manager = ConfigManager()
-global_config = GlobalConfig(
+
+global_config = Config(
     screen_width=480,
     screen_height=640,
     screen=SCREEN,
@@ -88,34 +89,43 @@ stage2_config = Config(
     background=background,
     entity_boundary=pygame.Rect(0, 0, 1000, 1000)
 )
-enemy_config = EnemyConfig(
-    imgs=asteroidimgs,
-    speed=10,
+enemy_config = Config(
+    imgs=asteroidimgs,  # 이미지들
+    speed=10,  # 초기 속도
     enemy_offset_width=5,  # 적이 좌우 벽에서 떨어진 정도
-    score=20,
-    health=100,
-    power=50
+    score=20,  # 적을 죽이면 얻는 점수
+    health=100,  # 적의 체력
+    power=50  # 적에게 맞으면 닳는 체력
 )
-bullet_config = BulletConfig(
-    bullet_img=bullet_img,
-    shotgun_img=shotgun_img,
-    speed=(0, -10),
+bullet_config = Config(
+    bullet_img=bullet_img,  # 총알 이미지
+    shotgun_img=shotgun_img,  # 샷건 이미지
+    speed=10,  # 초기 속도
 )
-item_config = ItemConfig(
-    imgs=item_imgs,
-    speed=(0, 10),
-    item_offset_width=20,
-    heal=10
+item_config = Config(
+    imgs=item_imgs,  # 이미지들
+    speed=10,  # 초기 속도
+    item_offset_width=20,  # 아이템이 좌우 벽에서 떨어진 정도
+    heal=10  # 플레이어가 얻는 체력
 )
 boss_config = Config(
     spell_img=boss1_spell_img,
-    spell_speed=(0, 10),
+    spell_speed=10,
     spell_power=10,
     boss1_img=boss1_img,
-    boss1_health=1000,
+    boss1_health=3000,
     boss1_score=2000,
     boss1_summon_delay=50,
-    boss1_speed=(20, 0)
+    boss1_speed=20
+)
+player_config = Config(
+    pos=(SCREEN_WIDTH//2, SCREEN_HEIGHT*3//4),
+    img=player_img,
+    speed=5,
+    boundary_rect=SCREEN_RECT,
+    weapon=None,
+    power=50,
+    health=20000
 )
 
 config_manager.add_config('global', global_config)
@@ -125,17 +135,7 @@ config_manager.add_config('enemy', enemy_config)
 config_manager.add_config('bullet', bullet_config)
 config_manager.add_config('item', item_config)
 config_manager.add_config('boss1', boss_config)
-
-# player
-player = Player(
-    pos=(SCREEN_WIDTH//2, SCREEN_HEIGHT*3//4),
-    img=player_img,
-    speed=(5, 5),
-    boundary_rect=SCREEN_RECT,
-    weapon=None,
-    power=50,
-    health=2000
-)
+config_manager.add_config('player', player_config)
 
 
 # scenes
@@ -154,7 +154,6 @@ scene_manager.add_scene('start_scene', opening_scene)
 # stage1
 stage1 = GameStage(
     level_interval=200,
-    player=player,
     config_manager=config_manager
 )
 stage1.add_event_listener(
@@ -166,7 +165,6 @@ scene_manager.add_scene('stage1', stage1)
 # stage2
 stage2 = AroundStage(
     level_interval=200,
-    player=player,
     config_manager=config_manager
 )
 stage2.add_event_listener(
