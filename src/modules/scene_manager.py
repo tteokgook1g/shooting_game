@@ -20,6 +20,7 @@ class SceneManager(EventListener):
 
     def goto_scene(self, scene_name):
         self.next_scene = self.scenes[scene_name]
+        self.next_scene.start_scene()
 
     def add_scene(self, scene_name, scene):
         self.scenes[scene_name] = scene

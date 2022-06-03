@@ -3,6 +3,7 @@ import pygame
 from ...interfaces.object_configs import *
 from ...interfaces.scene import Scene
 from ...interfaces.timer import *
+from ...interfaces.utils import get_direction
 from ..boss1 import Boss1
 from ..bullet import Bullet
 from ..enemy import Enemy
@@ -12,10 +13,9 @@ from ..player_weapon import *
 from ..render_items import *
 
 
-class GameStage(Scene):
+class AroundStage(Scene):
     '''
     게임의 스테이지 하나
-    스테이지를 시작학 때 start_scene 호출 필요
     게임이 끝날 때 EventListener.call_event('game_over')
     보스를 잡았을 때 EventListener.call_event('stage_clear')
     '''
@@ -42,6 +42,8 @@ class GameStage(Scene):
         self.next_level_score = level_interval
 
     def start_scene(self):
+        self.player.boundary_rect = self.configs.get_config(
+            'stage2', 'entity_boundary')
         # 플레이어 무기
         default_weapon = DefaultWeapon(
             cooltime=10, make_bullet=self.make_bullet)
@@ -53,22 +55,22 @@ class GameStage(Scene):
         enemy_timer = Timer()
         enemy_timer.set_timeout(0, self.make_enemy)
         self.timer_manager.set_timer(
-            enemy_timer, 'stage1_enemy_timer', (5, 20))
+            enemy_timer, 'stage2_enemy_timer', (5, 20))
 
         item_timer = Timer()
         item_timer.set_timeout(0, self.make_item)
-        self.timer_manager.set_timer(item_timer, 'stage1_item_timer', (25, 50))
+        self.timer_manager.set_timer(item_timer, 'stage2_item_timer', (25, 50))
 
         boss_spell_timer = Timer()
         boss_spell_timer.set_timeout(0, self.make_boss_spell)
         self.timer_manager.set_timer(
-            boss_spell_timer, 'stage1_boss_spell_timer', (35, 50))
+            boss_spell_timer, 'stage2_boss_spell_timer', (35, 50))
 
         summon_boss_timer = Timer()
         summon_boss_timer.set_timeout(self.configs.get_config(
             'boss1', 'boss1_summon_delay'), self.summon_boss)
         self.timer_manager.set_timer(
-            summon_boss_timer, 'stage1_summon_boss_timer', None)
+            summon_boss_timer, 'stage2_summon_boss_timer', None)
 
         # add event_listener
         self.player.add_event_listener('delete', self.game_over)
@@ -83,17 +85,17 @@ class GameStage(Scene):
         self.ENEMY_IMAGES 중 랜덤 이미지를 사용한다
         '''
         # get config
-        offset = self.configs.get_config('enemy', 'enemy_offset_width')
-        screen_width = self.configs.get_config('global', 'screen_width')
         enemy_imgs = self.configs.get_config('enemy', 'imgs')
         enemyid = random.randint(0, len(enemy_imgs)-1)
 
+        camera_rect = self.get_camera_rect()
+
         new_enemy = Enemy(
-            pos=(random.randint(offset, screen_width-offset), 0),
+            pos=(random.randint(camera_rect.left, camera_rect.right), 0),
             img=enemy_imgs[enemyid],
             speed=(0, self.configs.get_config('enemy', 'speed')),
             boundary_rect=self.configs.get_config(
-                'stage1', 'entity_boundary'),
+                'stage2', 'entity_boundary'),
             score=self.configs.get_config('enemy', 'score'),
             health=self.configs.get_config('enemy', 'health'),
             power=self.configs.get_config('enemy', 'power'),
@@ -128,7 +130,7 @@ class GameStage(Scene):
             img=bullet_img,
             speed=self.configs.get_config('bullet', 'speed'),
             boundary_rect=self.configs.get_config(
-                'stage1', 'entity_boundary'),
+                'stage2', 'entity_boundary'),
             power=self.player.power
         )
         new_bullet.add_event_listener(
@@ -153,7 +155,7 @@ class GameStage(Scene):
 
         speed = self.configs.get_config('bullet', 'speed')
         boundary_rect = self.configs.get_config(
-            'stage1', 'entity_boundary')
+            'stage2', 'entity_boundary')
 
         for i in range(-2, 3):
             new_rect = img_rect.copy()
@@ -185,7 +187,7 @@ class GameStage(Scene):
             img=item_imgs[random.randint(0, len(item_imgs)-1)],
             speed=self.configs.get_config('item', 'speed'),
             boundary_rect=self.configs.get_config(
-                'stage1', 'entity_boundary'),
+                'stage2', 'entity_boundary'),
             heal=self.configs.get_config('item', 'heal')
         )
         new_item.add_event_listener('delete', self.delete_item, new_item)
@@ -193,13 +195,13 @@ class GameStage(Scene):
         return True
 
     def make_boss_spell(self):
-        if self.boss:  # boss가 존재하면
-            new_spell: Enemy = self.boss.summon_spell()
-            new_spell.add_event_listener(
-                'delete', self.delete_enemy, new_spell)
-            new_spell.add_event_listener('add_score', self.add_score, 0)
-            self.list_enemies.append(new_spell)
-            return True
+        # if self.boss:  # boss가 존재하면
+        #     new_spell: Enemy = self.boss.summon_spell()
+        #     new_spell.add_event_listener(
+        #         'delete', self.delete_enemy, new_spell)
+        #     new_spell.add_event_listener('add_score', self.add_score, 0)
+        #     self.list_enemies.append(new_spell)
+        #     return True
         return False
 
     def summon_boss(self):
@@ -213,11 +215,11 @@ class GameStage(Scene):
             pos=img_rect.topleft,
             img=self.configs.get_config('boss1', 'boss1_img'),
             speed=self.configs.get_config('boss1', 'boss1_speed'),
-            boundary_rect=self.configs.get_config('stage1', 'entity_boundary'),
+            boundary_rect=self.configs.get_config('stage2', 'entity_boundary'),
             score=self.configs.get_config('boss1', 'boss1_score'),
             health=self.configs.get_config('boss1', 'boss1_health'),
             power=1000000,
-            typeid='stage1_boss1'
+            typeid='stage2_boss1'
         )
         self.boss.add_event_listener('delete', self.stage_clear)
         self.boss.add_event_listener(
@@ -255,6 +257,13 @@ class GameStage(Scene):
         self.call_event('stage_clear')
 
     # ------------------------------------------------ callbacks
+
+    def update_enemy_speed(self):
+        default_speed = self.configs.get_config('enemy', 'speed') // 3
+        for enemy in self.list_enemies:
+            direction = get_direction(enemy.pos, self.player.pos)
+            enemy.speed = [direction[0] * default_speed,
+                           direction[1] * default_speed]
 
     def move_player(self):
         '''
@@ -302,19 +311,27 @@ class GameStage(Scene):
         '''
 
         # get config
-        BACKGROUND = self.configs.get_config(
-            'stage1', 'background')
+        BACKGROUND = self.configs.get_config('stage2', 'background')
         TEXT_COLOR = self.configs.get_config('global', 'text_color')
+        ENTITY_BOUNDARY: pygame.Rect = self.configs.get_config(
+            'stage2', 'entity_boundary')
+        temp_screen = pygame.Surface(
+            (ENTITY_BOUNDARY.width, ENTITY_BOUNDARY.height))
+
+        camera_rect = self.get_camera_rect()
+
+        temp_screen.fill((255, 255, 255, 0))
+        pygame.draw.rect(temp_screen, (0, 0, 0), ENTITY_BOUNDARY, width=5)
+        self.player.draw(temp_screen)
+        for bullet in self.list_bullets:
+            bullet.draw(temp_screen)
+        for item in self.list_items:
+            item.draw(temp_screen)
+        for enemy in self.list_enemies:
+            enemy.draw(temp_screen)
 
         screen.blit(BACKGROUND, (0, 0))
-        self.player.draw(screen)
-        for bullet in self.list_bullets:
-            bullet.draw(screen)
-        for item in self.list_items:
-            item.draw(screen)
-        for enemy in self.list_enemies:
-            enemy.draw(screen)
-
+        screen.blit(temp_screen, (0, 0), camera_rect)
         draw_text(
             screen=screen,
             msg=f'Score: {str(self.score).zfill(6)}',
@@ -327,6 +344,12 @@ class GameStage(Scene):
             color=TEXT_COLOR,
             center=(400, 40)
         )
+
+    def get_camera_rect(self):
+        camera_rect: pygame.Rect = self.configs.get_config(
+            'global', 'screen_rect').copy()
+        camera_rect.center = self.player.get_rect().center
+        return camera_rect
 
     def update(self):
         '''
@@ -350,5 +373,6 @@ class GameStage(Scene):
         if self.boss:
             self.boss.update()
         self.move_player()  # 플레이어 이동
+        self.update_enemy_speed()
         self.move_entities()  # 엔티티 이동
         self.check_collide()  # 충돌 확인

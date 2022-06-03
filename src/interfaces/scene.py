@@ -13,6 +13,9 @@ class Scene(EventListener):
         super().__init__()
         self.configs = config_manager
 
+    def start_scene(self):
+        pass
+
     def update(self):
         pass
 

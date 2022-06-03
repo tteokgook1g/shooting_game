@@ -5,6 +5,7 @@
 # 1 - 모듈 임포트
 
 import pygame
+from src.modules.scenes.around_stage import AroundStage
 from src.modules.player_weapon import *
 from src.modules.scene_manager import SceneManager
 from src.modules.scenes.finish_scene import FinishScene
@@ -89,7 +90,7 @@ stage2_config = Config(
 )
 enemy_config = EnemyConfig(
     imgs=asteroidimgs,
-    speed=(0, 10),
+    speed=10,
     enemy_offset_width=5,  # 적이 좌우 벽에서 떨어진 정도
     score=20,
     health=100,
@@ -111,9 +112,9 @@ boss_config = Config(
     spell_speed=(0, 10),
     spell_power=10,
     boss1_img=boss1_img,
-    boss1_health=500,
+    boss1_health=1000,
     boss1_score=2000,
-    boss1_summon_delay=150,
+    boss1_summon_delay=50,
     boss1_speed=(20, 0)
 )
 
@@ -133,7 +134,7 @@ player = Player(
     boundary_rect=SCREEN_RECT,
     weapon=None,
     power=50,
-    health=200
+    health=2000
 )
 
 
@@ -159,8 +160,20 @@ stage1 = GameStage(
 stage1.add_event_listener(
     'game_over', scene_manager.goto_scene, 'finish_scene')
 stage1.add_event_listener(
-    'stage_clear', scene_manager.goto_scene, 'finish_scene')
+    'stage_clear', scene_manager.goto_scene, 'stage2')
 scene_manager.add_scene('stage1', stage1)
+
+# stage2
+stage2 = AroundStage(
+    level_interval=200,
+    player=player,
+    config_manager=config_manager
+)
+stage2.add_event_listener(
+    'game_over', scene_manager.goto_scene, 'finish_scene')
+stage2.add_event_listener(
+    'stage_clear', scene_manager.goto_scene, 'finish_scene')
+scene_manager.add_scene('stage2', stage2)
 
 # game_over_scene
 finish_scene = FinishScene(
