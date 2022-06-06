@@ -5,9 +5,9 @@ class Player
 import pygame
 from pygame import Vector2
 
-from ..interfaces.event_listener import EventListener
-from ..interfaces.object_configs import ConfigManager
-from .player_weapon import PlayerWeapon
+from ...interfaces.event_listener import EventListener
+from ...interfaces.object_configs import ConfigManager
+from ..weapons.player_weapon import PlayerWeapon
 
 
 class Player(EventListener):

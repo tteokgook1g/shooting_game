@@ -6,7 +6,7 @@ import pygame
 
 from src.interfaces.scene import Scene
 from src.interfaces.object_configs import *
-from ..render_items import *
+from ...interfaces.utils import *
 
 
 class OpeningScene(Scene):

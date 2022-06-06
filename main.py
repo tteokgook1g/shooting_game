@@ -5,16 +5,14 @@
 # 1 - 모듈 임포트
 
 import pygame
-from src.modules.scenes.around_stage import AroundStage
-from src.modules.player_weapon import *
-from src.modules.scene_manager import SceneManager
-from src.modules.scenes.finish_scene import FinishScene
-from src.modules.scenes.open_scene import OpeningScene
 
 from src.interfaces.object_configs import *
+from src.modules.scene_manager import SceneManager
+from src.modules.scenes.around_stage import AroundStage
+from src.modules.scenes.finish_scene import FinishScene
 from src.modules.scenes.game_stage import GameStage
-from src.modules.player import Player
-
+from src.modules.scenes.open_scene import OpeningScene
+from src.modules.weapons.player_weapon import *
 
 pygame.init()
 # 2.1 전역 상수
@@ -124,7 +122,7 @@ player_config = Config(
     speed=5,
     boundary_rect=SCREEN_RECT,
     weapon=None,
-    power=50,
+    power=100,
     health=20000
 )
 

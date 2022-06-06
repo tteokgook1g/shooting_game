@@ -2,7 +2,7 @@
 
 from typing import Callable
 
-from ..interfaces.entity import Entity
+from ...interfaces.entity import Entity
 from .enemy import Enemy
 
 

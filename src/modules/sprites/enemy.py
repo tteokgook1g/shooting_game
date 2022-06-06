@@ -3,8 +3,7 @@
 from typing import Callable
 
 
-from ..interfaces.entity import Entity
-from .player import Player
+from ...interfaces.entity import Entity
 
 
 class Enemy(Entity):
@@ -33,7 +32,7 @@ class Enemy(Entity):
         self.power = kwargs['power']
         self.typeid = kwargs['typeid']
 
-    def do_when_collide_with_player(self, player: Player):
+    def do_when_collide_with_player(self, player):
         '''
         자신을 삭제하고 플레이어의 체력을 차감한다
         '''

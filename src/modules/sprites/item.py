@@ -2,7 +2,7 @@
 class Item
 '''
 
-from ..interfaces.entity import Entity
+from ...interfaces.entity import Entity
 from .player import Player
 
 

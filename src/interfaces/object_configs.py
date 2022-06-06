@@ -28,14 +28,19 @@ class ConfigManager():
     여러개의 config를 관리한다
     '''
 
-    def __init__(self):
-        self.configs: dict[str, Config] = {}
+    configs: dict[str, Config] = {}
 
-    def get_config(self, type: str, name: str):
-        return self.configs[type].get_config(name)
+    @classmethod
+    def get_config(cls, type: str, name: str):
+        return cls.configs[type].get_config(name)
 
-    def set_config(self, type: str, name: str, value):
-        self.configs[type].set_config(name, value)
+    @classmethod
+    def set_config(cls, type: str, name: str, value):
+        cls.configs[type].set_config(name, value)
 
-    def add_config(self, type: str, config: Config):
-        self.configs[type] = config
+    @classmethod
+    def add_config(cls, type: str, config: Config):
+        cls.configs[type] = config
+
+    def __new__(self):
+        return ConfigManager

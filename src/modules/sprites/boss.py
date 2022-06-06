@@ -5,7 +5,8 @@ import pygame
 
 from .enemy import Enemy
 from .player import Player
-from ..interfaces.object_configs import ConfigManager
+from ...interfaces.object_configs import ConfigManager
+from ..weapons.boss_weapon import BossWeapon
 
 
 class Boss1(Enemy):
@@ -13,7 +14,7 @@ class Boss1(Enemy):
     죽을 때 EventListener.call_event('delete') 호출
     '''
 
-    def __init__(self, config_manager: ConfigManager, **kwargs):
+    def __init__(self, **kwargs):
         '''
         pos: (x, y) | 초기 위치
         img: pygame.Surface | 이미지
@@ -26,28 +27,15 @@ class Boss1(Enemy):
         typeid: str | 적의 종류를 저장한다
         '''
         super().__init__(**kwargs)
-        self.configs = config_manager
-        self.max_health = self.health
 
-    def summon_spell(self):
-        '''
-        spell을 생성하여 return한다
-        '''
-        boss_rect = self.get_rect()
-        img: pygame.Surface = self.configs.get_config('boss1', 'spell_img')
-        img_rect = img.get_rect()
-        img_rect.centerx = boss_rect.centerx
-        img_rect.top = boss_rect.bottom
-        return Enemy(
-            pos=img_rect.topleft,
-            img=img,
-            speed=(0, self.configs.get_config('boss1', 'spell_speed')),
-            boundary_rect=self.configs.get_config('stage1', 'entity_boundary'),
-            score=0,
-            health=1000000,
-            power=self.configs.get_config('boss1', 'spell_power'),
-            typeid='boss1_spell1'
-        )
+        self.max_health = self.health
+        self.weapon = None
+
+    def set_weapon(self, weapon: BossWeapon):
+        self.weapon = weapon
+
+    def attack(self):
+        self.weapon.attack()
 
     def do_when_collide_with_player(self, player: Player):
         '''
@@ -58,7 +46,7 @@ class Boss1(Enemy):
     def update(self):
         k = 1/15
         cx = self.get_rect().centerx
-        screenx = self.configs.get_config(
+        screenx = ConfigManager.get_config(
             'global', 'screen_rect').centerx
         self.speed[0] += k*(screenx-cx)
 

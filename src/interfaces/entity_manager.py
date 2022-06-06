@@ -39,3 +39,7 @@ class EntityManagerFactory():
         if not name in cls.entity_managers:
             cls.entity_managers[name] = EntityManager()
         return cls.entity_managers[name]
+
+    @classmethod
+    def clear_all_managers(cls):
+        cls.entity_managers.clear()
