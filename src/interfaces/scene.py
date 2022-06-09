@@ -4,14 +4,12 @@ interface scene
 
 import pygame
 
-from .object_configs import ConfigManager
 from .event_listener import EventListener
 
 
 class Scene(EventListener):
-    def __init__(self, config_manager: ConfigManager):
+    def __init__(self):
         super().__init__()
-        self.configs = config_manager
 
     def start_scene(self):
         pass

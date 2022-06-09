@@ -10,10 +10,6 @@ from .event_listener import EventListener
 
 
 class Entity(EventListener):
-    '''
-    죽을 때 EventListener.call_event('delete') 호출
-    '''
-
     def __init__(self, **kwargs):
         '''
         pos: (x, y) | 초기 위치
@@ -27,15 +23,17 @@ class Entity(EventListener):
         self.img: pygame.Surface = kwargs['img']
         self.speed: Vector2 = Vector2(kwargs['speed'][:])
         self.boundary_rect: pygame.Rect = kwargs['boundary_rect']
+        self.entity_manager = None  # 이 엔티티가 포함된 엔티티매니저 참조
+        self.entity = None  # 이 엔티티를 참조
 
     def move(self):
         '''
         self.speed만큼 이동한다
         '''
         self.pos += self.speed
-        # delete if self is out of screen
+        # destroy if self is out of screen
         if not self.get_rect().colliderect(self.boundary_rect):
-            self.call_event('delete')
+            self.destroy()
 
     def get_rect(self):
         '''
@@ -54,3 +52,6 @@ class Entity(EventListener):
         screen에 blit한다
         '''
         screen.blit(self.img, self.pos[:])
+
+    def destroy(self):
+        self.entity_manager.remove_entity(self.entity)

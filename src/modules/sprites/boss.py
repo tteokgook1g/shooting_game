@@ -7,6 +7,7 @@ from .enemy import Enemy
 from .player import Player
 from ...interfaces.object_configs import ConfigManager
 from ..weapons.boss_weapon import BossWeapon
+from ...interfaces.entity_manager import EntityManagerFactory
 
 
 class Boss1(Enemy):
@@ -28,6 +29,8 @@ class Boss1(Enemy):
         '''
         super().__init__(**kwargs)
 
+        self.entity_manager = EntityManagerFactory.get_manager('enemy')
+        self.entity = self
         self.max_health = self.health
         self.weapon = None
 
@@ -46,8 +49,7 @@ class Boss1(Enemy):
     def update(self):
         k = 1/15
         cx = self.get_rect().centerx
-        screenx = ConfigManager.get_config(
-            'global', 'screen_rect').centerx
+        screenx = ConfigManager.get_config('stage1', 'entity_boundary').centerx
         self.speed[0] += k*(screenx-cx)
 
     def draw(self, screen: pygame.Surface):
@@ -64,3 +66,7 @@ class Boss1(Enemy):
         boss_rect = self.get_rect()
         bar_rect.center = boss_rect.centerx, boss_rect.bottom+10
         screen.blit(bar, bar_rect)
+
+    def destroy(self):
+        super().destroy()
+        self.call_event('delete')

@@ -20,7 +20,6 @@ SCREEN_WIDTH = 480
 SCREEN_HEIGHT = 640
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 SCREEN_RECT = SCREEN.get_rect()
-ENEMY_OFFSET_WIDTH = 5  # 적이 좌우 벽에서 떨어진 정도
 
 # 3 - 그림과 효과음 삽입
 try:
@@ -73,11 +72,10 @@ config_manager = ConfigManager()
 global_config = Config(
     screen_width=480,
     screen_height=640,
-    screen=SCREEN,
-    screen_rect=SCREEN_RECT,
     text_color=BLACK,
     fps=FPS,
-    score=0
+    score=0,
+    screen_rect=SCREEN_RECT
 )
 stage1_config = Config(
     background=background,
@@ -137,11 +135,10 @@ config_manager.add_config('player', player_config)
 
 
 # scenes
-scene_manager = SceneManager(config_manager=config_manager)
+scene_manager = SceneManager()
 
 # opening_scene
 opening_scene = OpeningScene(
-    config_manager=config_manager,
     background=start_image
 )
 
@@ -152,7 +149,6 @@ scene_manager.add_scene('start_scene', opening_scene)
 # stage1
 stage1 = GameStage(
     level_interval=200,
-    config_manager=config_manager
 )
 stage1.add_event_listener(
     'game_over', scene_manager.goto_scene, 'finish_scene')
@@ -163,7 +159,6 @@ scene_manager.add_scene('stage1', stage1)
 # stage2
 stage2 = AroundStage(
     level_interval=200,
-    config_manager=config_manager
 )
 stage2.add_event_listener(
     'game_over', scene_manager.goto_scene, 'finish_scene')
@@ -173,7 +168,6 @@ scene_manager.add_scene('stage2', stage2)
 
 # game_over_scene
 finish_scene = FinishScene(
-    config_manager=config_manager,
     score=0,
     background=gameover_image
 )
@@ -187,7 +181,6 @@ scene_manager.next_scene = opening_scene
 # 7 game loop
 while True:
 
-    fpsClock.tick(scene_manager.fps)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -195,5 +188,8 @@ while True:
 
     scene_manager.update()
 
+    SCREEN.fill((255, 255, 255))
     scene_manager.draw(SCREEN)
-    pygame.display.flip()
+
+    fpsClock.tick(scene_manager.fps)
+    pygame.display.update()

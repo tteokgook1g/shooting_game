@@ -2,14 +2,14 @@
 다양한 무기 클래스를 정의한다.
 '''
 
-from typing import Callable
 
 import pygame
-from ...interfaces.entity_manager import EntityManagerFactory
 from pygame import Vector2
 
+from ...interfaces.entity_manager import EntityManagerFactory
 from ...interfaces.object_configs import ConfigManager
 from ...interfaces.timer import ManualTimer, TimerManager
+from ...interfaces.utils import *
 from ..sprites.bullet import Bullet
 
 
@@ -19,12 +19,35 @@ class PlayerWeapon():
     def __init__(self):
         self.player = None
         self.bullets = EntityManagerFactory.get_manager('bullet')
+        self.COLOR_DEACTIVATED = pygame.color.Color(150, 150, 150, 100)
 
     def attack(self):
         pass
 
     def bind_player(self, player):
         self.player = player
+
+    def _render_skill_info_list(self):
+        return []
+
+    def render_skill_info(self):
+        gap_width = 10
+        infos: list[pygame.Surface] = self._render_skill_info_list()
+        screen_width = sum(map(lambda x: x.get_rect().width,
+                           infos))+gap_width*(len(infos)-1)
+        screen_height = max(
+            map(lambda x: x.get_rect().height, infos))
+
+        result = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
+        result.fill((255, 255, 255))
+
+        curr_point = Vector2(0, 0)
+
+        for info in infos:
+            result.blit(info, curr_point[:])
+            curr_point.x += gap_width+info.get_rect().width
+
+        return result
 
 
 class WeaponDecorator(PlayerWeapon):
@@ -40,6 +63,9 @@ class WeaponDecorator(PlayerWeapon):
     def bind_player(self, player):
         super().bind_player(player)
         self._weapon.bind_player(player)
+
+    def _render_skill_info_list(self):
+        return self._weapon._render_skill_info_list()
 
 
 class DefaultPlayerWeapon(PlayerWeapon):
@@ -95,6 +121,22 @@ class DefaultPlayerWeapon(PlayerWeapon):
 
     def delete_bullet(self, bullet):
         self.bullets.remove_entity(bullet)
+
+    def _render_skill_info_list(self):
+        bullet_img: pygame.Surface = ConfigManager.get_config(
+            'bullet', 'bullet_img')
+        bullet_img = pygame.transform.scale(bullet_img, (50, 50))
+
+        if self.timer.time > 0:  # 비활성화 표시
+            temp = pygame.Surface((50, 50), pygame.SRCALPHA)
+            temp.fill(self.COLOR_DEACTIVATED)
+            bullet_img.blit(temp, (0, 0))
+
+            cooltime_text = render_text(
+                f'{self.timer.time}', ConfigManager.get_config('global', 'text_color'), 16)
+            blit_item(bullet_img, cooltime_text, bottomright=(50, 50))
+
+        return [bullet_img]
 
 
 class ShotgunDecorator(WeaponDecorator):
@@ -156,3 +198,21 @@ class ShotgunDecorator(WeaponDecorator):
 
     def delete_bullet(self, bullet):
         self.bullets.remove_entity(bullet)
+
+    def _render_skill_info_list(self):
+        shotgun_img: pygame.Surface = ConfigManager.get_config(
+            'bullet', 'shotgun_img')
+        shotgun_img = pygame.transform.scale(shotgun_img, (50, 50))
+
+        if self.timer.time > 0:  # 비활성화 표시
+            temp = pygame.Surface((50, 50), pygame.SRCALPHA)
+            temp.fill(self.COLOR_DEACTIVATED)
+            shotgun_img.blit(temp, (0, 0))
+
+            cooltime_text = render_text(
+                f'{self.timer.time}', ConfigManager.get_config('global', 'text_color'), 16)
+            blit_item(shotgun_img, cooltime_text, bottomright=(50, 50))
+
+        other = super()._render_skill_info_list()
+        other.append(shotgun_img)
+        return other

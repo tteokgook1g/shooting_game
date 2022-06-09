@@ -4,6 +4,7 @@ from typing import Callable
 
 from ...interfaces.entity import Entity
 from .enemy import Enemy
+from ...interfaces.entity_manager import EntityManagerFactory
 
 
 class Bullet(Entity):
@@ -22,12 +23,14 @@ class Bullet(Entity):
         '''
 
         super().__init__(**kwargs)
+        self.entity_manager = EntityManagerFactory.get_manager('bullet')
+        self.entity = self
         self.power = kwargs['power']
 
-    def do_when_collide_with_enemy(self, enemy: Enemy, func_increase_score: Callable[[int], None] = None):
+    def do_when_collide_with_enemy(self, enemy: Enemy):
         '''
         적에게 self.power만큼 피해를 입힌다
         적이 죽으면 func_increase_score(score)을 실행한다
         '''
-        self.call_event('delete')
-        enemy.attacked(self.power, func_increase_score)
+        self.destroy()
+        enemy.attacked(self.power)

@@ -12,11 +12,11 @@ def get_direction(src: tuple[float, float], dst: tuple[float, float]) -> tuple[f
     return ((dst[0]-src[0])/d, (dst[1]-src[1])/d)
 
 
-def render_text(msg: str, color: tuple[int, int, int]) -> pygame.Surface:
+def render_text(msg: str, color: tuple[int, int, int], font_size=24) -> pygame.Surface:
     '''
     문자열 msg를 color 색깔로 render해서 return한다
     '''
-    font = pygame.font.Font(None, 24)
+    font = pygame.font.Font(None, font_size)
     return font.render(msg, True, color)
 
 

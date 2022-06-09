@@ -15,7 +15,7 @@ class Player(EventListener):
     죽을 때 EventListener.call_event('delete') 호출
     '''
 
-    def __init__(self, config_manager: ConfigManager):
+    def __init__(self):
         '''
         pos: (x, y) | 초기 위치
         img: pygame.Surface | 이미지
@@ -27,18 +27,18 @@ class Player(EventListener):
         '''
 
         super().__init__()
-        default_speed = config_manager.get_config('player', 'speed')
+        default_speed = ConfigManager.get_config('player', 'speed')
 
-        config_manager.get_config('player', 'pos')
-        self.pos: Vector2 = Vector2(config_manager.get_config('player', 'pos'))
-        self.img: pygame.Surface = config_manager.get_config('player', 'img')
+        ConfigManager.get_config('player', 'pos')
+        self.pos: Vector2 = Vector2(ConfigManager.get_config('player', 'pos'))
+        self.img: pygame.Surface = ConfigManager.get_config('player', 'img')
         self.speed: Vector2 = Vector2((default_speed, default_speed))
-        self.boundary_rect: pygame.Rect = config_manager.get_config(
+        self.boundary_rect: pygame.Rect = ConfigManager.get_config(
             'player', 'boundary_rect')
-        self.weapon: PlayerWeapon = config_manager.get_config(
+        self.weapon: PlayerWeapon = ConfigManager.get_config(
             'player', 'weapon')
-        self.power = config_manager.get_config('player', 'power')
-        self.health: int = config_manager.get_config('player', 'health')
+        self.power = ConfigManager.get_config('player', 'power')
+        self.health: int = ConfigManager.get_config('player', 'health')
 
     def get_pos(self) -> tuple[int, int]:
         return self.pos[:]

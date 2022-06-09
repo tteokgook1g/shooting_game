@@ -42,5 +42,18 @@ class ConfigManager():
     def add_config(cls, type: str, config: Config):
         cls.configs[type] = config
 
+    # score는 많이 참조하므로 함수로 만든다
+    @classmethod
+    def get_score(cls):
+        return cls.get_config('global', 'score')
+
+    @classmethod
+    def set_score(cls, new_score):
+        cls.set_config('global', 'score', new_score)
+
+    @classmethod
+    def add_score(cls, adding_score):
+        cls.set_config('global', 'score', cls.get_score()+adding_score)
+
     def __new__(self):
         return ConfigManager

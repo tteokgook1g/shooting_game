@@ -25,12 +25,11 @@ class AroundStage(Scene):
     def __init__(
         self,
         level_interval: int,
-        config_manager: ConfigManager
     ):
         '''
         level_interval: int | 레벨의 점수 간격
         '''
-        super().__init__(config_manager)
+        super().__init__()
 
         # 변수
         self.player = None
@@ -43,14 +42,14 @@ class AroundStage(Scene):
         self.next_level_score = level_interval
 
     def start_scene(self):
-        self.player = Player(self.configs)
+        self.player = Player()
         self.enemies = EntityManagerFactory.get_manager('enemy')
         self.bullets = EntityManagerFactory.get_manager('bullet')
         self.items = EntityManagerFactory.get_manager('item')
 
         self.summon_boss()
 
-        self.player.boundary_rect = self.configs.get_config(
+        self.player.boundary_rect = ConfigManager.get_config(
             'stage2', 'entity_boundary')
         # 플레이어 무기
         default_weapon = DefaultPlayerWeapon(
@@ -75,18 +74,19 @@ class AroundStage(Scene):
     # callbacks ------------------------------------------------
 
     def summon_boss(self):
-        img: pygame.Surface = self.configs.get_config('boss1', 'boss1_img')
+        img: pygame.Surface = ConfigManager.get_config('boss1', 'boss1_img')
         img_rect = img.get_rect()
         img_rect.top = 20
-        img_rect.centerx = self.configs.get_config(
-            'global', 'screen_rect').centerx
+        img_rect.centerx = ConfigManager.get_config(
+            'stage2', 'entity_boundary').centerx
         self.boss = Boss1(
             pos=img_rect.topleft,
-            img=self.configs.get_config('boss1', 'boss1_img'),
-            speed=(self.configs.get_config('boss1', 'boss1_speed'), 0),
-            boundary_rect=self.configs.get_config('stage2', 'entity_boundary'),
-            score=self.configs.get_config('boss1', 'boss1_score'),
-            health=self.configs.get_config('boss1', 'boss1_health'),
+            img=ConfigManager.get_config('boss1', 'boss1_img'),
+            speed=(ConfigManager.get_config('boss1', 'boss1_speed'), 0),
+            boundary_rect=ConfigManager.get_config(
+                'stage2', 'entity_boundary'),
+            score=ConfigManager.get_config('boss1', 'boss1_score'),
+            health=ConfigManager.get_config('boss1', 'boss1_health'),
             power=1,
             typeid='stage2_boss1'
         )
@@ -111,7 +111,7 @@ class AroundStage(Scene):
         self.call_event('stage_clear')
 
     def end_stage(self):
-        self.configs.set_config('player', 'health', self.player.health)
+        ConfigManager.set_config('player', 'health', self.player.health)
         self.timer_manager.clear_all_timers()
         self.items.clear_entities()
         self.bullets.clear_entities()
@@ -130,7 +130,7 @@ class AroundStage(Scene):
         return ConfigManager.get_config('global', 'score')
 
     def update_enemy_speed(self):
-        default_speed = self.configs.get_config('enemy', 'speed') // 3
+        default_speed = ConfigManager.get_config('enemy', 'speed') // 3
         for enemy in self.enemies.array:
             direction = get_direction(enemy.pos, self.player.get_pos())
             enemy.speed = [direction[0] * default_speed,
@@ -160,11 +160,11 @@ class AroundStage(Scene):
         player_rect = self.player.get_rect()
 
         # 적과 총알 충돌
-        for enemy in self.enemies.array:
-            for bullet in self.bullets.array:
+        for bullet in self.bullets.array:
+            for enemy in self.enemies.array:
                 if bullet.get_rect().colliderect(enemy.get_rect()):
                     # increase score for attack
-                    bullet.do_when_collide_with_enemy(enemy, self.add_score)
+                    bullet.do_when_collide_with_enemy(enemy)
 
         # 플레이어와 아이템 충돌
         for item in self.items.array:
@@ -182,9 +182,9 @@ class AroundStage(Scene):
         '''
 
         # get config
-        BACKGROUND = self.configs.get_config('stage2', 'background')
-        TEXT_COLOR = self.configs.get_config('global', 'text_color')
-        ENTITY_BOUNDARY: pygame.Rect = self.configs.get_config(
+        BACKGROUND = ConfigManager.get_config('stage2', 'background')
+        TEXT_COLOR = ConfigManager.get_config('global', 'text_color')
+        ENTITY_BOUNDARY: pygame.Rect = ConfigManager.get_config(
             'stage2', 'entity_boundary')
         temp_screen = pygame.Surface(
             (ENTITY_BOUNDARY.width, ENTITY_BOUNDARY.height))
@@ -216,8 +216,16 @@ class AroundStage(Scene):
             center=(400, 40)
         )
 
+        info_pos = list(screen.get_rect().midbottom)
+        info_pos[1] -= 10
+        blit_item(
+            screen=screen,
+            item=self.player.weapon.render_skill_info(),
+            midbottom=info_pos
+        )
+
     def get_camera_rect(self):
-        camera_rect: pygame.Rect = self.configs.get_config(
+        camera_rect: pygame.Rect = ConfigManager.get_config(
             'global', 'screen_rect').copy()
         camera_rect.center = self.player.get_rect().center
         return camera_rect
@@ -249,7 +257,11 @@ class AroundStage(Scene):
         self.move_entities()  # 엔티티 이동
         self.check_collide()  # 충돌 확인
 
+        self.enemies.update()
+        self.bullets.update()
+        self.items.update()
+
     def when_level_up(self):
-        fps = self.configs.get_config('global', 'fps')
-        self.configs.set_config('global', 'fps', fps+1)
+        fps = ConfigManager.get_config('global', 'fps')
+        ConfigManager.set_config('global', 'fps', fps+1)
         self.next_level_score += self.level_interval

@@ -72,9 +72,7 @@ class DefaultStage1EnemySummoner(EnemySummoner):
             power=ConfigManager.get_config('enemy', 'power'),
             typeid=f'default{enemyid}'
         )
-        new_enemy.add_event_listener('delete', self.delete_enemy, new_enemy)
-        new_enemy.add_event_listener(
-            'add_score', self.add_score, new_enemy.score)
+
         self.enemies.add_entity(new_enemy)
 
     def delete_enemy(self, enemy):

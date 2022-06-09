@@ -3,6 +3,7 @@ class Item
 '''
 
 from ...interfaces.entity import Entity
+from ...interfaces.entity_manager import EntityManagerFactory
 from .player import Player
 
 
@@ -21,11 +22,15 @@ class Item(Entity):
         heal: int | 플레이어가 얻는 체력
         '''
         super().__init__(**kwargs)
+        self.entity_manager = EntityManagerFactory.get_manager('item')
         self.heal = kwargs['heal']
 
     def do_when_collide_with_player(self, player: Player):
         '''
         자신을 삭제하고 플레이어의 체력을 차감한다
         '''
-        self.call_event('delete')
+        self.destroy()
         player.add_health(self.heal)
+
+    def destroy(self):
+        self.entity_manager.remove_entity(self)
