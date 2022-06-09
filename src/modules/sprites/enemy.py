@@ -1,11 +1,9 @@
 # 5.3 class Enemy
 
-from typing import Callable
-import pygame
 
-
-from .entity import Entity
-from .player import Player
+from ...interfaces.entity import Entity
+from ...interfaces.entity_manager import EntityManagerFactory
+from ...interfaces.game_state import StateManager
 
 
 class Enemy(Entity):
@@ -33,19 +31,21 @@ class Enemy(Entity):
         self.score = kwargs['score']
         self.power = kwargs['power']
         self.typeid = kwargs['typeid']
+        self.entity_manager = EntityManagerFactory.get_manager('enemy')
+        self.entity = self
 
-    def do_when_collide_with_player(self, player: Player):
+    def do_when_collide_with_player(self, player):
         '''
         자신을 삭제하고 플레이어의 체력을 차감한다
         '''
-        self.delete()
+        self.destroy()
         player.add_health(-self.power)
 
-    def delete(self):
-        self.call_event('add_score')
-        self.call_event('delete')
+    def destroy(self):
+        super().destroy()
+        StateManager.add_score(self.score)
 
-    def attacked(self, attack_power: int, func_increase_score: Callable[[int], None] = None):
+    def attacked(self, attack_power: int):
         '''
         적은 attack_power만큼 피해를 입는다
         적이 죽으면 func_increase_score(score)을 실행한다
@@ -53,7 +53,4 @@ class Enemy(Entity):
         self.health -= attack_power
         # 체력이 0이하이면 죽는다
         if self.health <= 0:
-            self.delete()
-            # 점수를 증가시킨다
-            func_increase_score(self.score)
-        return 0
+            self.destroy()

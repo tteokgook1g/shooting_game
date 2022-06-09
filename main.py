@@ -5,15 +5,14 @@
 # 1 - 모듈 임포트
 
 import pygame
-from src.modules.player_weapon import *
+
+from src.interfaces.game_state import *
 from src.modules.scene_manager import SceneManager
+from src.modules.scenes.around_stage import AroundStage
 from src.modules.scenes.finish_scene import FinishScene
-from src.modules.scenes.open_scene import OpeningScene
-
-from src.interfaces.object_configs import *
 from src.modules.scenes.game_stage import GameStage
-from src.modules.player import Player
-
+from src.modules.scenes.open_scene import OpeningScene
+from src.modules.weapons.player_weapon import *
 
 pygame.init()
 # 2.1 전역 상수
@@ -21,7 +20,6 @@ SCREEN_WIDTH = 480
 SCREEN_HEIGHT = 640
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 SCREEN_RECT = SCREEN.get_rect()
-ENEMY_OFFSET_WIDTH = 5  # 적이 좌우 벽에서 떨어진 정도
 
 # 3 - 그림과 효과음 삽입
 try:
@@ -69,123 +67,113 @@ fpsClock = pygame.time.Clock()
 
 
 # object config
-config_manager = ConfigManager()
-global_config = GlobalConfig(
+config_manager = StateManager()
+
+global_config = GameState(
     screen_width=480,
     screen_height=640,
-    screen=SCREEN,
-    screen_rect=SCREEN_RECT,
-    stage1_bg=background,
     text_color=BLACK,
     fps=FPS,
-    score=0
+    score=0,
+    screen_rect=SCREEN_RECT
 )
-enemy_config = EnemyConfig(
-    imgs=asteroidimgs,
-    speed=(0, 10),
-    boundary_rect=SCREEN_RECT,
+stage1_config = GameState(
+    background=background,
+    entity_boundary=SCREEN_RECT
+)
+stage2_config = GameState(
+    background=background,
+    entity_boundary=pygame.Rect(0, 0, 1000, 1000)
+)
+enemy_config = GameState(
+    imgs=asteroidimgs,  # 이미지들
+    speed=10,  # 초기 속도
     enemy_offset_width=5,  # 적이 좌우 벽에서 떨어진 정도
-    score=20,
-    health=100,
-    power=50
+    score=20,  # 적을 죽이면 얻는 점수
+    health=100,  # 적의 체력
+    power=50  # 적에게 맞으면 닳는 체력
 )
-bullet_config = BulletConfig(
-    bullet_img=bullet_img,
-    shotgun_img=shotgun_img,
-    speed=(0, -10),
-    boundary_rect=SCREEN_RECT
+bullet_config = GameState(
+    bullet_img=bullet_img,  # 총알 이미지
+    shotgun_img=shotgun_img,  # 샷건 이미지
+    speed=10,  # 초기 속도
 )
-item_config = ItemConfig(
-    imgs=item_imgs,
-    speed=(0, 10),
-    boundary_rect=SCREEN_RECT,
-    item_offset_width=20,
-    heal=10
+item_config = GameState(
+    imgs=item_imgs,  # 이미지들
+    speed=10,  # 초기 속도
+    item_offset_width=20,  # 아이템이 좌우 벽에서 떨어진 정도
+    heal=10  # 플레이어가 얻는 체력
 )
-boss_config = Config(
+boss_config = GameState(
     spell_img=boss1_spell_img,
-    spell_speed=(0, 10),
+    spell_speed=10,
     spell_power=10,
     boss1_img=boss1_img,
-    boss1_health=500,
+    boss1_health=3000,
     boss1_score=2000,
-    boss1_summon_delay=150,
-    boss1_speed=(20, 0)
+    boss1_summon_delay=50,
+    boss1_speed=20
+)
+player_config = GameState(
+    pos=(SCREEN_WIDTH//2, SCREEN_HEIGHT*3//4),
+    img=player_img,
+    speed=5,
+    boundary_rect=SCREEN_RECT,
+    weapon=None,
+    power=100,
+    health=20000
 )
 
 config_manager.add_config('global', global_config)
+config_manager.add_config('stage1', stage1_config)
+config_manager.add_config('stage2', stage2_config)
 config_manager.add_config('enemy', enemy_config)
 config_manager.add_config('bullet', bullet_config)
 config_manager.add_config('item', item_config)
 config_manager.add_config('boss1', boss_config)
-
-# player
-player = Player(
-    pos=(SCREEN_WIDTH//2, SCREEN_HEIGHT*3//4),
-    img=player_img,
-    speed=(5, 5),
-    boundary_rect=SCREEN_RECT,
-    weapon=None,
-    power=50,
-    health=200
-)
+config_manager.add_config('player', player_config)
 
 
 # scenes
-scene_manager = SceneManager(config_manager=config_manager)
+scene_manager = SceneManager()
 
+# opening_scene
 opening_scene = OpeningScene(
-    config_manager=config_manager,
-    background=start_image,
-    font= pygame.font.Font("./src/modules/scenes/D2Coding-Ver1.3.2-20180524.ttf", 48, bold=False, italic=False)
-    
+    background=start_image
 )
-stage1 = GameStage(
-    enemy_images=config_manager.get_config('enemy', 'imgs'),
-    bullet_images=bullet_imgs,
-    level_interval=50,
-    player=player,
-    config_manager=config_manager,
-    )
-
 
 opening_scene.add_event_listener(
     'start_game', scene_manager.goto_scene, 'stage1')
 scene_manager.add_scene('start_scene', opening_scene)
 
+# stage1
 stage1 = GameStage(
-    enemy_images=config_manager.get_config('enemy', 'imgs'),
-    bullet_images=bullet_img,
     level_interval=200,
-    player=player,
-    config_manager=config_manager
 )
 stage1.add_event_listener(
     'game_over', scene_manager.goto_scene, 'finish_scene')
 stage1.add_event_listener(
-    'stage_clear', scene_manager.goto_scene, 'finish_scene')
+    'stage_clear', scene_manager.goto_scene, 'stage2')
 scene_manager.add_scene('stage1', stage1)
 
+# stage2
+stage2 = AroundStage(
+    level_interval=200,
+)
+stage2.add_event_listener(
+    'game_over', scene_manager.goto_scene, 'finish_scene')
+stage2.add_event_listener(
+    'stage_clear', scene_manager.goto_scene, 'finish_scene')
+scene_manager.add_scene('stage2', stage2)
+
+# game_over_scene
 finish_scene = FinishScene(
-    config_manager=config_manager,
     score=0,
     background=gameover_image
 )
-
-scene_manager.add_scene("opening_scene", opening_scene)
-scene_manager.add_scene('stage1', stage1)
-scene_manager.add_scene('finish_scene', finish_scene)
-scene_manager.current_scene = opening_scene
-scene_manager.next_scene = opening_scene
-
-opening_scene.add_event_listener(
-    'start_game', scene_manager.goto_scene, 'stage1'
-)
-stage1.add_event_listener(
-    'game_over', scene_manager.goto_scene, 'finish_scene')
-
 scene_manager.add_scene('finish_scene', finish_scene)
 
+# start with opening_scene
 scene_manager.current_scene = opening_scene
 scene_manager.next_scene = opening_scene
 
@@ -193,7 +181,6 @@ scene_manager.next_scene = opening_scene
 # 7 game loop
 while True:
 
-    fpsClock.tick(scene_manager.fps)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -201,5 +188,8 @@ while True:
 
     scene_manager.update()
 
-    scene_manager.  draw(SCREEN)
-    pygame.display.flip()
+    SCREEN.fill((255, 255, 255))
+    scene_manager.draw(SCREEN)
+
+    fpsClock.tick(scene_manager.fps)
+    pygame.display.update()

@@ -3,10 +3,11 @@ class Player
 '''
 
 import pygame
+from pygame import Vector2
 
-from .player_weapon import PlayerWeapon
-
-from ..interfaces.event_listener import EventListener
+from ...interfaces.event_listener import EventListener
+from ...interfaces.game_state import StateManager
+from ..weapons.player_weapon import PlayerWeapon
 
 
 class Player(EventListener):
@@ -14,7 +15,7 @@ class Player(EventListener):
     죽을 때 EventListener.call_event('delete') 호출
     '''
 
-    def __init__(self, **kwargs):
+    def __init__(self):
         '''
         pos: (x, y) | 초기 위치
         img: pygame.Surface | 이미지
@@ -26,14 +27,21 @@ class Player(EventListener):
         '''
 
         super().__init__()
+        default_speed = StateManager.get_config('player', 'speed')
 
-        self.pos: list[int, int] = list(kwargs['pos'])
-        self.img: pygame.Surface = kwargs['img']
-        self.speed: list[int, int] = list(kwargs['speed'][:])
-        self.boundary_rect: pygame.Rect = kwargs['boundary_rect']
-        self.weapon: PlayerWeapon = kwargs['weapon']
-        self.power = kwargs['power']
-        self.health: int = kwargs['health']
+        StateManager.get_config('player', 'pos')
+        self.pos: Vector2 = Vector2(StateManager.get_config('player', 'pos'))
+        self.img: pygame.Surface = StateManager.get_config('player', 'img')
+        self.speed: Vector2 = Vector2((default_speed, default_speed))
+        self.boundary_rect: pygame.Rect = StateManager.get_config(
+            'player', 'boundary_rect')
+        self.weapon: PlayerWeapon = StateManager.get_config(
+            'player', 'weapon')
+        self.power = StateManager.get_config('player', 'power')
+        self.health: int = StateManager.get_config('player', 'health')
+
+    def get_pos(self) -> tuple[int, int]:
+        return self.pos[:]
 
     def add_health(self, health):
         '''
@@ -48,7 +56,7 @@ class Player(EventListener):
         '''
         (x, y)로 움직인다
         '''
-        self.pos = [x, y]
+        self.pos[:] = [x, y]
         self.check_boundary()
 
     def move(self, keys):
@@ -106,4 +114,4 @@ class Player(EventListener):
         '''
         screen에 blit한다
         '''
-        screen.blit(self.img, self.pos)
+        screen.blit(self.img, self.pos[:])

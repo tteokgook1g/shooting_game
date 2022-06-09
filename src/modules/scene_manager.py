@@ -4,19 +4,18 @@ class SceneManager
 
 import pygame
 
-from ..interfaces.scene import Scene
 from ..interfaces.event_listener import EventListener
-from ..interfaces.object_configs import ConfigManager
+from ..interfaces.game_state import StateManager
+from ..interfaces.scene import Scene
 
 
 class SceneManager(EventListener):
-    def __init__(self, config_manager: ConfigManager):
+    def __init__(self):
         super().__init__()
         self.scenes: dict[str, Scene] = {}
         self.current_scene: Scene = None
         self.next_scene: Scene = None
-        self.configs = config_manager
-        self.fps = self.configs.get_config('global', 'fps')
+        self.fps = StateManager.get_config('global', 'fps')
 
     def goto_scene(self, scene_name):
         self.next_scene = self.scenes[scene_name]
@@ -26,8 +25,10 @@ class SceneManager(EventListener):
 
     def update(self):
         # get configs
-        self.fps = self.configs.get_config('global', 'fps')
-        self.current_scene = self.next_scene
+        self.fps = StateManager.get_config('global', 'fps')
+        if self.current_scene != self.next_scene:
+            self.current_scene = self.next_scene
+            self.current_scene.start_scene()
         self.current_scene.update()
 
     def draw(self, screen: pygame.Surface):

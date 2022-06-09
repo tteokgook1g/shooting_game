@@ -2,17 +2,14 @@
 interface Entity
 '''
 
-from typing import Callable
-import pygame
 
-from ..interfaces.event_listener import EventListener
+import pygame
+from pygame import Vector2
+
+from .event_listener import EventListener
 
 
 class Entity(EventListener):
-    '''
-    죽을 때 EventListener.call_event('delete') 호출
-    '''
-
     def __init__(self, **kwargs):
         '''
         pos: (x, y) | 초기 위치
@@ -22,20 +19,21 @@ class Entity(EventListener):
         '''
         super().__init__()
 
-        self.pos: list[int, int] = list(kwargs['pos'][:])
+        self.pos: Vector2 = Vector2(kwargs['pos'][:])
         self.img: pygame.Surface = kwargs['img']
-        self.speed: list[int, int] = list(kwargs['speed'][:])
+        self.speed: Vector2 = Vector2(kwargs['speed'][:])
         self.boundary_rect: pygame.Rect = kwargs['boundary_rect']
+        self.entity_manager = None  # 이 엔티티가 포함된 엔티티매니저 참조
+        self.entity = None  # 이 엔티티를 참조
 
     def move(self):
         '''
         self.speed만큼 이동한다
         '''
-        self.pos[0] += self.speed[0]
-        self.pos[1] += self.speed[1]
-        # delete if self is out of screen
+        self.pos += self.speed
+        # destroy if self is out of screen
         if not self.get_rect().colliderect(self.boundary_rect):
-            self.call_event('delete')
+            self.destroy()
 
     def get_rect(self):
         '''
@@ -46,8 +44,14 @@ class Entity(EventListener):
         rect.top = self.pos[1]
         return rect
 
+    def get_pos(self) -> tuple[int, int]:
+        return self.pos[:]
+
     def draw(self, screen: pygame.Surface):
         '''
         screen에 blit한다
         '''
-        screen.blit(self.img, self.pos)
+        screen.blit(self.img, self.pos[:])
+
+    def destroy(self):
+        self.entity_manager.remove_entity(self.entity)
