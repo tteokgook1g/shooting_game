@@ -33,7 +33,7 @@ def blit_item(screen: pygame.Surface, item: pygame.Surface, **kwargs):
     screen.blit(item, item_rect)
 
 
-def draw_text(screen: pygame.Surface, msg: str, color: tuple[int, int, int], **kwargs):
+def blit_text(screen: pygame.Surface, msg: str, color: tuple[int, int, int], **kwargs):
     '''
     kwargs에는 rect의 prop을 전달해야 한다
     ex) center = (10,100)

@@ -204,13 +204,13 @@ class AroundStage(Scene):
 
         screen.blit(BACKGROUND, (0, 0))
         screen.blit(temp_screen, (0, 0), camera_rect)
-        draw_text(
+        blit_text(
             screen=screen,
             msg=f'Score: {str(self.get_score()).zfill(6)}',
             color=TEXT_COLOR,
             center=(400, 10)
         )
-        draw_text(
+        blit_text(
             screen=screen,
             msg=f'Health: {self.player.health}',
             color=TEXT_COLOR,

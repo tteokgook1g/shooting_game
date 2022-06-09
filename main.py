@@ -12,6 +12,7 @@ from src.modules.scenes.around_stage import AroundStage
 from src.modules.scenes.finish_scene import FinishScene
 from src.modules.scenes.game_stage import GameStage
 from src.modules.scenes.open_scene import OpeningScene
+from src.modules.scenes.shop_scene import ShopScene
 from src.modules.weapons.player_weapon import *
 
 pygame.init()
@@ -74,7 +75,6 @@ global_config = GameState(
     screen_height=640,
     text_color=BLACK,
     fps=FPS,
-    score=0,
     screen_rect=SCREEN_RECT
 )
 stage1_config = GameState(
@@ -120,7 +120,9 @@ player_config = GameState(
     speed=5,
     boundary_rect=SCREEN_RECT,
     weapon=None,
+    score=0,
     power=100,
+    gold=0,
     health=20000
 )
 
@@ -173,23 +175,27 @@ finish_scene = FinishScene(
 )
 scene_manager.add_scene('finish_scene', finish_scene)
 
+# shop_scene
+shop_scene = ShopScene(background=background)
+scene_manager.add_scene('shop_scene', shop_scene)
+
 # start with opening_scene
-scene_manager.current_scene = opening_scene
-scene_manager.next_scene = opening_scene
+# scene_manager.current_scene = opening_scene
+# scene_manager.next_scene = opening_scene
+scene_manager.current_scene = shop_scene
+scene_manager.next_scene = shop_scene
 
 
 # 7 game loop
 while True:
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            exit()
-
     scene_manager.update()
 
     SCREEN.fill((255, 255, 255))
     scene_manager.draw(SCREEN)
 
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            exit()
     fpsClock.tick(scene_manager.fps)
     pygame.display.update()

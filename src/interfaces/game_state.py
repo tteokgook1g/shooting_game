@@ -42,18 +42,22 @@ class StateManager():
     def add_config(cls, type: str, config: GameState):
         cls.configs[type] = config
 
-    # score는 많이 참조하므로 함수로 만든다
+    # 많이 참조하는 state 함수로 만든다
     @classmethod
     def get_score(cls):
-        return cls.get_config('global', 'score')
-
-    @classmethod
-    def set_score(cls, new_score):
-        cls.set_config('global', 'score', new_score)
+        return cls.get_config('player', 'score')
 
     @classmethod
     def add_score(cls, adding_score):
-        cls.set_config('global', 'score', cls.get_score()+adding_score)
+        cls.set_config('player', 'score', cls.get_score()+adding_score)
+
+    @classmethod
+    def get_gold(cls):
+        return cls.get_config('player', 'gold')
+
+    @classmethod
+    def add_gold(cls, adding_gold):
+        cls.set_config('player', 'gold', cls.get_gold()+adding_gold)
 
     def __new__(self):
         return StateManager

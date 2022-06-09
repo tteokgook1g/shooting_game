@@ -36,12 +36,7 @@ class EntityManager():
 
     def update(self):
         for entity in self.to_delete:
-            try:
-                self.array.remove(entity)
-            except ValueError:
-                print("ValueError")
-                print(entity)
-                exit(1)
+            self.array.remove(entity)
         self.to_delete.clear()
 
 

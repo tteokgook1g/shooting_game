@@ -184,13 +184,13 @@ class GameStage(Scene):
         for enemy in self.enemies.array:
             enemy.draw(screen)
 
-        draw_text(
+        blit_text(
             screen=screen,
             msg=f'Score: {str(StateManager.get_score()).zfill(6)}',
             color=TEXT_COLOR,
             center=(400, 10)
         )
-        draw_text(
+        blit_text(
             screen=screen,
             msg=f'Health: {self.player.health}',
             color=TEXT_COLOR,
