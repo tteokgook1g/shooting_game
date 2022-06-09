@@ -4,8 +4,8 @@ class FinishScene
 
 import pygame
 
-from src.interfaces.scene import Scene
-from src.interfaces.object_configs import *
+from ...interfaces.game_state import *
+from ...interfaces.scene import Scene
 from ...interfaces.utils import *
 
 
@@ -16,13 +16,13 @@ class FinishScene(Scene):
         self.background = background
 
     def update(self):
-        self.score = ConfigManager.get_config('global', 'score')
+        self.score = StateManager.get_config('global', 'score')
 
     def draw(self, screen: pygame.Surface):
         blit_item(screen, self.background, topleft=(0, 0))
         draw_text(
             screen=screen,
             msg=f'Score: {str(self.score).zfill(6)}',
-            color=ConfigManager.get_config('global', 'text_color'),
-            center=ConfigManager.get_config('global', 'screen_rect').center
+            color=StateManager.get_config('global', 'text_color'),
+            center=StateManager.get_config('global', 'screen_rect').center
         )

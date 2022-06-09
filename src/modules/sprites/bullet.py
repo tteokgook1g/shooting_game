@@ -1,10 +1,9 @@
 # 5.4 class Bullet
 
-from typing import Callable
 
 from ...interfaces.entity import Entity
-from .enemy import Enemy
 from ...interfaces.entity_manager import EntityManagerFactory
+from .enemy import Enemy
 
 
 class Bullet(Entity):

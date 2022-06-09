@@ -6,7 +6,7 @@
 from typing import Any
 
 
-class Config():
+class GameState():
     '''
     interface config
     '''
@@ -23,12 +23,12 @@ class Config():
         self.config[name] = value
 
 
-class ConfigManager():
+class StateManager():
     '''
     여러개의 config를 관리한다
     '''
 
-    configs: dict[str, Config] = {}
+    configs: dict[str, GameState] = {}
 
     @classmethod
     def get_config(cls, type: str, name: str):
@@ -39,7 +39,7 @@ class ConfigManager():
         cls.configs[type].set_config(name, value)
 
     @classmethod
-    def add_config(cls, type: str, config: Config):
+    def add_config(cls, type: str, config: GameState):
         cls.configs[type] = config
 
     # score는 많이 참조하므로 함수로 만든다
@@ -56,4 +56,4 @@ class ConfigManager():
         cls.set_config('global', 'score', cls.get_score()+adding_score)
 
     def __new__(self):
-        return ConfigManager
+        return StateManager

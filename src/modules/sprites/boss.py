@@ -1,13 +1,14 @@
 '''
 class Boss1
 '''
+
 import pygame
 
+from ...interfaces.entity_manager import EntityManagerFactory
+from ...interfaces.game_state import StateManager
+from ..weapons.boss_weapon import BossWeapon
 from .enemy import Enemy
 from .player import Player
-from ...interfaces.object_configs import ConfigManager
-from ..weapons.boss_weapon import BossWeapon
-from ...interfaces.entity_manager import EntityManagerFactory
 
 
 class Boss1(Enemy):
@@ -49,7 +50,7 @@ class Boss1(Enemy):
     def update(self):
         k = 1/15
         cx = self.get_rect().centerx
-        screenx = ConfigManager.get_config('stage1', 'entity_boundary').centerx
+        screenx = StateManager.get_config('stage1', 'entity_boundary').centerx
         self.speed[0] += k*(screenx-cx)
 
     def draw(self, screen: pygame.Surface):

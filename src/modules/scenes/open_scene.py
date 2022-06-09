@@ -4,7 +4,7 @@ class FinishScene
 
 import pygame
 
-from src.interfaces.scene import Scene
+from ...interfaces.scene import Scene
 from ...interfaces.utils import *
 
 

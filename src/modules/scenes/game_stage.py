@@ -1,15 +1,17 @@
+'첫 번째 스테이지'
+
 import pygame
 
 from ...interfaces.entity_manager import EntityManagerFactory
-from ...interfaces.object_configs import ConfigManager
+from ...interfaces.game_state import StateManager
 from ...interfaces.scene import Scene
 from ...interfaces.timer import *
 from ...interfaces.utils import *
 from ..sprites.boss import Boss1
+from ..sprites.player import Player
 from ..weapons.boss_weapon import *
 from ..weapons.enemy_summoner import *
 from ..weapons.item_summoner import *
-from ..sprites.player import Player
 from ..weapons.player_weapon import *
 
 
@@ -57,7 +59,7 @@ class GameStage(Scene):
         # 소환자
         default_item_summoner = DefaultStage1ItemSummoner(
             cooltime_range=(25, 50),
-            heal=ConfigManager.get_config('item', 'heal')
+            heal=StateManager.get_config('item', 'heal')
         )
         self.item_summoner = default_item_summoner
 
@@ -70,7 +72,7 @@ class GameStage(Scene):
         self.timer_manager = TimerManager()
 
         summon_boss_timer = Timer()
-        summon_boss_timer.set_timeout(ConfigManager.get_config(
+        summon_boss_timer.set_timeout(StateManager.get_config(
             'boss1', 'boss1_summon_delay'), self.summon_boss)
         self.timer_manager.set_timer(
             summon_boss_timer, 'stage1_summon_boss_timer', None)
@@ -81,19 +83,19 @@ class GameStage(Scene):
     # callbacks ------------------------------------------------
 
     def summon_boss(self):
-        img: pygame.Surface = ConfigManager.get_config('boss1', 'boss1_img')
+        img: pygame.Surface = StateManager.get_config('boss1', 'boss1_img')
         img_rect = img.get_rect()
         img_rect.top = 20
-        img_rect.centerx = ConfigManager.get_config(
+        img_rect.centerx = StateManager.get_config(
             'stage1', 'entity_boundary').centerx
         self.boss = Boss1(
             pos=img_rect.topleft,
-            img=ConfigManager.get_config('boss1', 'boss1_img'),
-            speed=(ConfigManager.get_config('boss1', 'boss1_speed'), 0),
-            boundary_rect=ConfigManager.get_config(
+            img=StateManager.get_config('boss1', 'boss1_img'),
+            speed=(StateManager.get_config('boss1', 'boss1_speed'), 0),
+            boundary_rect=StateManager.get_config(
                 'stage1', 'entity_boundary'),
-            score=ConfigManager.get_config('boss1', 'boss1_score'),
-            health=ConfigManager.get_config('boss1', 'boss1_health'),
+            score=StateManager.get_config('boss1', 'boss1_score'),
+            health=StateManager.get_config('boss1', 'boss1_health'),
             power=1000000,
             typeid='stage1_boss1'
         )
@@ -116,7 +118,7 @@ class GameStage(Scene):
         self.call_event('stage_clear')
 
     def end_stage(self):
-        ConfigManager.set_config('player', 'health', self.player.health)
+        StateManager.set_config('player', 'health', self.player.health)
         self.timer_manager.clear_all_timers()
         self.items.clear_entities()
         self.bullets.clear_entities()
@@ -170,8 +172,8 @@ class GameStage(Scene):
         '''
 
         # get config
-        BACKGROUND = ConfigManager.get_config('stage1', 'background')
-        TEXT_COLOR = ConfigManager.get_config('global', 'text_color')
+        BACKGROUND = StateManager.get_config('stage1', 'background')
+        TEXT_COLOR = StateManager.get_config('global', 'text_color')
 
         screen.blit(BACKGROUND, (0, 0))
         self.player.draw(screen)
@@ -184,7 +186,7 @@ class GameStage(Scene):
 
         draw_text(
             screen=screen,
-            msg=f'Score: {str(ConfigManager.get_score()).zfill(6)}',
+            msg=f'Score: {str(StateManager.get_score()).zfill(6)}',
             color=TEXT_COLOR,
             center=(400, 10)
         )
@@ -209,10 +211,10 @@ class GameStage(Scene):
         '''
 
         # 시간에 따른 점수 증가
-        ConfigManager.add_score(1)
+        StateManager.add_score(1)
 
         # 점수에 따른 레벨업
-        if ConfigManager.get_score() >= self.next_level_score:
+        if StateManager.get_score() >= self.next_level_score:
             self.when_level_up()
 
         # 엔티티 소환
@@ -236,6 +238,6 @@ class GameStage(Scene):
         self.items.update()
 
     def when_level_up(self):
-        fps = ConfigManager.get_config('global', 'fps')
-        ConfigManager.set_config('global', 'fps', fps+1)
+        fps = StateManager.get_config('global', 'fps')
+        StateManager.set_config('global', 'fps', fps+1)
         self.next_level_score += self.level_interval

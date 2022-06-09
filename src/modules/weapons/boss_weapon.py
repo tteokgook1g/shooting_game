@@ -1,11 +1,12 @@
 '보스의 공격을 정의한다'
 
-import pygame
 import random
+
+import pygame
 from pygame import Vector2
 
 from ...interfaces.entity_manager import EntityManagerFactory
-from ...interfaces.object_configs import ConfigManager
+from ...interfaces.game_state import StateManager
 from ...interfaces.timer import ManualTimer, TimerManager
 from ..sprites.enemy import Enemy
 
@@ -57,19 +58,19 @@ class DefaultStage1BossWeapon(BossWeapon):
 
     def make_spell(self):
         boss_rect = self.boss.get_rect()
-        img: pygame.Surface = ConfigManager.get_config('boss1', 'spell_img')
+        img: pygame.Surface = StateManager.get_config('boss1', 'spell_img')
         img_rect = img.get_rect()
         img_rect.centerx = boss_rect.centerx
         img_rect.top = boss_rect.bottom
         new_spell = Enemy(
             pos=img_rect.topleft,
             img=img,
-            speed=(0, ConfigManager.get_config('boss1', 'spell_speed')),
-            boundary_rect=ConfigManager.get_config(
+            speed=(0, StateManager.get_config('boss1', 'spell_speed')),
+            boundary_rect=StateManager.get_config(
                 'stage1', 'entity_boundary'),
             score=0,
             health=1000000,
-            power=ConfigManager.get_config('boss1', 'spell_power'),
+            power=StateManager.get_config('boss1', 'spell_power'),
             typeid='boss1_spell1'
         )
 
@@ -105,7 +106,7 @@ class DefaultStage2BossWeapon(BossWeapon):
         self.ENEMY_IMAGES 중 랜덤 이미지를 사용한다
         '''
         # get config
-        enemy_imgs = ConfigManager.get_config('enemy', 'imgs')
+        enemy_imgs = StateManager.get_config('enemy', 'imgs')
         enemyid = random.randint(0, len(enemy_imgs)-1)
 
         delta_pos = Vector2((150, 0)).rotate(random.random()*360)
@@ -114,23 +115,23 @@ class DefaultStage2BossWeapon(BossWeapon):
         new_enemy = Enemy(
             pos=(boss_pos+delta_pos)[:],
             img=enemy_imgs[enemyid],
-            speed=(0, ConfigManager.get_config('enemy', 'speed')),
-            boundary_rect=ConfigManager.get_config(
+            speed=(0, StateManager.get_config('enemy', 'speed')),
+            boundary_rect=StateManager.get_config(
                 'stage2', 'entity_boundary'),
-            score=ConfigManager.get_config('enemy', 'score'),
-            health=ConfigManager.get_config('enemy', 'health'),
-            power=ConfigManager.get_config('enemy', 'power'),
+            score=StateManager.get_config('enemy', 'score'),
+            health=StateManager.get_config('enemy', 'health'),
+            power=StateManager.get_config('enemy', 'power'),
             typeid=f'default{enemyid}'
         )
-        
+
         self.enemies.add_entity(new_enemy)
 
     def delete_enemy(self, enemy):
         self.enemies.remove_entity(enemy)
 
     def add_score(self, adding_score: int):
-        ConfigManager.set_config(
+        StateManager.set_config(
             'global',
             'score',
-            ConfigManager.get_config('global', 'score')+adding_score
+            StateManager.get_config('global', 'score')+adding_score
         )

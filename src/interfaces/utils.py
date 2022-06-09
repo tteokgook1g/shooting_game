@@ -2,8 +2,9 @@
 프로젝트에 사용할 함수
 '''
 
-import pygame
 import math
+
+import pygame
 
 
 def get_direction(src: tuple[float, float], dst: tuple[float, float]) -> tuple[float, float]:

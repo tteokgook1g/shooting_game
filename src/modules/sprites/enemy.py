@@ -1,11 +1,9 @@
 # 5.3 class Enemy
 
-from typing import Callable
-
 
 from ...interfaces.entity import Entity
-from ...interfaces.object_configs import ConfigManager
 from ...interfaces.entity_manager import EntityManagerFactory
+from ...interfaces.game_state import StateManager
 
 
 class Enemy(Entity):
@@ -45,7 +43,7 @@ class Enemy(Entity):
 
     def destroy(self):
         super().destroy()
-        ConfigManager.add_score(self.score)
+        StateManager.add_score(self.score)
 
     def attacked(self, attack_power: int):
         '''

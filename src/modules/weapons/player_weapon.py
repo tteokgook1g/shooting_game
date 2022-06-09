@@ -2,12 +2,11 @@
 다양한 무기 클래스를 정의한다.
 '''
 
-
 import pygame
 from pygame import Vector2
 
 from ...interfaces.entity_manager import EntityManagerFactory
-from ...interfaces.object_configs import ConfigManager
+from ...interfaces.game_state import StateManager
 from ...interfaces.timer import ManualTimer, TimerManager
 from ...interfaces.utils import *
 from ..sprites.bullet import Bullet
@@ -97,7 +96,7 @@ class DefaultPlayerWeapon(PlayerWeapon):
         '''
 
         # get config
-        bullet_img: pygame.Surface = ConfigManager.get_config(
+        bullet_img: pygame.Surface = StateManager.get_config(
             'bullet', 'bullet_img')
 
         player_rect: pygame.Rect = self.player.get_rect()
@@ -110,8 +109,8 @@ class DefaultPlayerWeapon(PlayerWeapon):
         new_bullet = Bullet(
             pos=img_rect.topleft,
             img=bullet_img,
-            speed=(0, -ConfigManager.get_config('bullet', 'speed')),
-            boundary_rect=ConfigManager.get_config(
+            speed=(0, -StateManager.get_config('bullet', 'speed')),
+            boundary_rect=StateManager.get_config(
                 'stage2', 'entity_boundary'),
             power=self.player.power
         )
@@ -123,7 +122,7 @@ class DefaultPlayerWeapon(PlayerWeapon):
         self.bullets.remove_entity(bullet)
 
     def _render_skill_info_list(self):
-        bullet_img: pygame.Surface = ConfigManager.get_config(
+        bullet_img: pygame.Surface = StateManager.get_config(
             'bullet', 'bullet_img')
         bullet_img = pygame.transform.scale(bullet_img, (50, 50))
 
@@ -133,7 +132,7 @@ class DefaultPlayerWeapon(PlayerWeapon):
             bullet_img.blit(temp, (0, 0))
 
             cooltime_text = render_text(
-                f'{self.timer.time}', ConfigManager.get_config('global', 'text_color'), 16)
+                f'{self.timer.time}', StateManager.get_config('global', 'text_color'), 16)
             blit_item(bullet_img, cooltime_text, bottomright=(50, 50))
 
         return [bullet_img]
@@ -164,7 +163,7 @@ class ShotgunDecorator(WeaponDecorator):
         NUM_OF_BULLET = 24
 
         # get config
-        shotgun_img: pygame.Surface = ConfigManager.get_config(
+        shotgun_img: pygame.Surface = StateManager.get_config(
             'bullet', 'shotgun_img')
 
         player_rect: pygame.Rect = self.player.get_rect()
@@ -174,8 +173,8 @@ class ShotgunDecorator(WeaponDecorator):
         img_rect.bottom = player_rect.top
         img_rect.centerx = player_rect.centerx
 
-        speed = ConfigManager.get_config('bullet', 'speed')
-        boundary_rect = ConfigManager.get_config(
+        speed = StateManager.get_config('bullet', 'speed')
+        boundary_rect = StateManager.get_config(
             'stage2', 'entity_boundary')
 
         for i in range(NUM_OF_BULLET):
@@ -200,7 +199,7 @@ class ShotgunDecorator(WeaponDecorator):
         self.bullets.remove_entity(bullet)
 
     def _render_skill_info_list(self):
-        shotgun_img: pygame.Surface = ConfigManager.get_config(
+        shotgun_img: pygame.Surface = StateManager.get_config(
             'bullet', 'shotgun_img')
         shotgun_img = pygame.transform.scale(shotgun_img, (50, 50))
 
@@ -210,7 +209,7 @@ class ShotgunDecorator(WeaponDecorator):
             shotgun_img.blit(temp, (0, 0))
 
             cooltime_text = render_text(
-                f'{self.timer.time}', ConfigManager.get_config('global', 'text_color'), 16)
+                f'{self.timer.time}', StateManager.get_config('global', 'text_color'), 16)
             blit_item(shotgun_img, cooltime_text, bottomright=(50, 50))
 
         other = super()._render_skill_info_list()

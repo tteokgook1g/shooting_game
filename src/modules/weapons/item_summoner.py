@@ -3,7 +3,7 @@
 import random
 
 from ...interfaces.entity_manager import EntityManagerFactory
-from ...interfaces.object_configs import ConfigManager
+from ...interfaces.game_state import StateManager
 from ...interfaces.timer import ManualTimer, TimerManager
 from ..sprites.item import Item
 
@@ -54,15 +54,15 @@ class DefaultStage1ItemSummoner(ItemSummoner):
     def make_item(self):
 
         # get config
-        offset = ConfigManager.get_config('item', 'item_offset_width')
-        screen_width = ConfigManager.get_config('global', 'screen_width')
-        item_imgs = ConfigManager.get_config('item', 'imgs')
+        offset = StateManager.get_config('item', 'item_offset_width')
+        screen_width = StateManager.get_config('global', 'screen_width')
+        item_imgs = StateManager.get_config('item', 'imgs')
 
         new_item = Item(
             pos=(random.randint(offset, screen_width-offset), 0),
             img=item_imgs[random.randint(0, len(item_imgs)-1)],
-            speed=(0, ConfigManager.get_config('item', 'speed')),
-            boundary_rect=ConfigManager.get_config(
+            speed=(0, StateManager.get_config('item', 'speed')),
+            boundary_rect=StateManager.get_config(
                 'stage1', 'entity_boundary'),
             heal=self.heal
         )
@@ -98,16 +98,16 @@ class DefaultStage2ItemSummoner(ItemSummoner):
     def make_item(self):
 
         # get config
-        offset = ConfigManager.get_config('item', 'item_offset_width')
-        screen_width = ConfigManager.get_config(
+        offset = StateManager.get_config('item', 'item_offset_width')
+        screen_width = StateManager.get_config(
             'stage2', 'entity_boundary').width
-        item_imgs = ConfigManager.get_config('item', 'imgs')
+        item_imgs = StateManager.get_config('item', 'imgs')
 
         new_item = Item(
             pos=(random.randint(offset, screen_width-offset), 0),
             img=item_imgs[random.randint(0, len(item_imgs)-1)],
-            speed=(0, ConfigManager.get_config('item', 'speed')),
-            boundary_rect=ConfigManager.get_config(
+            speed=(0, StateManager.get_config('item', 'speed')),
+            boundary_rect=StateManager.get_config(
                 'stage2', 'entity_boundary'),
             heal=self.heal
         )

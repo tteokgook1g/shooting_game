@@ -6,7 +6,7 @@
 
 import pygame
 
-from src.interfaces.object_configs import *
+from src.interfaces.game_state import *
 from src.modules.scene_manager import SceneManager
 from src.modules.scenes.around_stage import AroundStage
 from src.modules.scenes.finish_scene import FinishScene
@@ -67,9 +67,9 @@ fpsClock = pygame.time.Clock()
 
 
 # object config
-config_manager = ConfigManager()
+config_manager = StateManager()
 
-global_config = Config(
+global_config = GameState(
     screen_width=480,
     screen_height=640,
     text_color=BLACK,
@@ -77,15 +77,15 @@ global_config = Config(
     score=0,
     screen_rect=SCREEN_RECT
 )
-stage1_config = Config(
+stage1_config = GameState(
     background=background,
     entity_boundary=SCREEN_RECT
 )
-stage2_config = Config(
+stage2_config = GameState(
     background=background,
     entity_boundary=pygame.Rect(0, 0, 1000, 1000)
 )
-enemy_config = Config(
+enemy_config = GameState(
     imgs=asteroidimgs,  # 이미지들
     speed=10,  # 초기 속도
     enemy_offset_width=5,  # 적이 좌우 벽에서 떨어진 정도
@@ -93,18 +93,18 @@ enemy_config = Config(
     health=100,  # 적의 체력
     power=50  # 적에게 맞으면 닳는 체력
 )
-bullet_config = Config(
+bullet_config = GameState(
     bullet_img=bullet_img,  # 총알 이미지
     shotgun_img=shotgun_img,  # 샷건 이미지
     speed=10,  # 초기 속도
 )
-item_config = Config(
+item_config = GameState(
     imgs=item_imgs,  # 이미지들
     speed=10,  # 초기 속도
     item_offset_width=20,  # 아이템이 좌우 벽에서 떨어진 정도
     heal=10  # 플레이어가 얻는 체력
 )
-boss_config = Config(
+boss_config = GameState(
     spell_img=boss1_spell_img,
     spell_speed=10,
     spell_power=10,
@@ -114,7 +114,7 @@ boss_config = Config(
     boss1_summon_delay=50,
     boss1_speed=20
 )
-player_config = Config(
+player_config = GameState(
     pos=(SCREEN_WIDTH//2, SCREEN_HEIGHT*3//4),
     img=player_img,
     speed=5,
