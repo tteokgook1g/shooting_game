@@ -136,14 +136,17 @@ scene_manager = SceneManager(config_manager=config_manager)
 
 opening_scene = OpeningScene(
     config_manager=config_manager,
-    background=start_image
+    background=start_image,
+    font= pygame.font.Font("./src/modules/scenes/D2Coding-Ver1.3.2-20180524.ttf", 48, bold=False, italic=False)
+    
 )
 stage1 = GameStage(
     enemy_images=config_manager.get_config('enemy', 'imgs'),
     bullet_images=bullet_imgs,
     level_interval=50,
     player=player,
-    config_manager=config_manager)
+    config_manager=config_manager,
+    )
 
 
 opening_scene.add_event_listener(
@@ -198,5 +201,5 @@ while True:
 
     scene_manager.update()
 
-    scene_manager.draw(SCREEN)
+    scene_manager.  draw(SCREEN)
     pygame.display.flip()
