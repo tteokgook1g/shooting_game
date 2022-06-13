@@ -26,3 +26,10 @@ class OpeningScene(Scene):
 
     def draw(self, screen: pygame.Surface):
         blit_item(screen, self.background, topleft=(0, 0))
+        draw_text(
+            screen=screen,
+            msg="Press SPACE to start the game",
+            color=self.configs.get_config('global', 'text_color'),
+            center=self.configs.get_config('global', 'screen_rect').center
+        )
+        

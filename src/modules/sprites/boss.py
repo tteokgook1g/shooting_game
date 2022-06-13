@@ -3,7 +3,8 @@ class Boss1
 '''
 
 import pygame
-
+import random
+import numpy
 from ...interfaces.entity_manager import EntityManagerFactory
 from ...interfaces.game_state import StateManager
 from ..weapons.boss_weapon import BossWeapon
@@ -34,6 +35,8 @@ class Boss1(Enemy):
         self.entity = self
         self.max_health = self.health
         self.weapon = None
+        self.counter=10
+        self.direction=1
 
     def set_weapon(self, weapon: BossWeapon):
         self.weapon = weapon
@@ -48,10 +51,14 @@ class Boss1(Enemy):
         player.add_health(-self.power)
 
     def update(self):
-        k = 1/15
+        k = 2.5
         cx = self.get_rect().centerx
         screenx = StateManager.get_state('stage1', 'entity_boundary').centerx
-        self.speed[0] += k*(screenx-cx)
+        if self.counter==0:
+            self.speed[0]=k*(numpy.random.normal()+1)*self.direction
+            self.direction*=-1
+            self.counter=numpy.random.randint(10,20)
+        self.counter-=1
 
     def draw(self, screen: pygame.Surface):
         super().draw(screen)
