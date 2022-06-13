@@ -32,7 +32,7 @@ try:
     computer = pygame.image.load("./asset/img/computer.png")
     computer = pygame.transform.scale(computer, (177//5, 115//5))
     note = pygame.image.load("./asset/img/note.png")
-    note = pygame.transform.scale(note, (177//5, 115//5))
+    note = pygame.transform.scale(note, (183//6, 205//6))
     asteroidimgs = (computer, book, note)
     gameover_image = pygame.image.load("./asset/img/gameover.jpg")
 
@@ -43,7 +43,12 @@ try:
 
     bullet_img = pygame.image.load("./asset/img/bullet01.png")
     shotgun_img = pygame.image.load("./asset/img/shotgun01.png")
-    item_imgs = (pygame.image.load("./asset/img/item01.png"),)
+
+    energy_drink_img = pygame.image.load("./asset/img/energy-drink.png")
+    energy_drink_img = pygame.transform.scale(
+        energy_drink_img, (128//3, 128//3))
+    item_imgs = (energy_drink_img,)
+
     boss1_spell_img = pygame.image.load("./asset/img/boss1_spell1.png")
     boss1_img = pygame.image.load("./asset/img/boss1.png")
     boss1_img = pygame.transform.scale(boss1_img, (192//2, 250//2))
@@ -105,7 +110,7 @@ item_config = GameState(
     imgs=item_imgs,  # 이미지들
     speed=10,  # 초기 속도
     item_offset_width=20,  # 아이템이 좌우 벽에서 떨어진 정도
-    heal=10  # 플레이어가 얻는 체력
+    heal=30  # 플레이어가 얻는 체력
 )
 boss_config = GameState(
     spell_img=boss1_spell_img,

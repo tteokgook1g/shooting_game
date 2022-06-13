@@ -214,7 +214,8 @@ class GameStage(Scene):
         bar = pygame.Surface((bar_width, bar_height))
         bar.fill((255, 255, 255))
         if self.grade == len(GRADE):
-            pygame.draw.rect(bar, (0, 0, 255), [0, 0, bar_width, bar_height])
+            pygame.draw.rect(bar, (0, 0, 255), [
+                0, 0, bar_width, bar_height])
             text = render_text(GRADE[self.grade - 1], (0, 0, 0), 12)
         else:
             pygame.draw.rect(bar, (0, 0, 0), [
