@@ -58,19 +58,19 @@ class DefaultStage1BossWeapon(BossWeapon):
 
     def make_spell(self):
         boss_rect = self.boss.get_rect()
-        img: pygame.Surface = StateManager.get_config('boss1', 'spell_img')
+        img: pygame.Surface = StateManager.get_state('boss1', 'spell_img')
         img_rect = img.get_rect()
         img_rect.centerx = boss_rect.centerx
         img_rect.top = boss_rect.bottom
         new_spell = Enemy(
             pos=img_rect.topleft,
             img=img,
-            speed=(0, StateManager.get_config('boss1', 'spell_speed')),
-            boundary_rect=StateManager.get_config(
+            speed=(0, StateManager.get_state('boss1', 'spell_speed')),
+            boundary_rect=StateManager.get_state(
                 'stage1', 'entity_boundary'),
             score=0,
             health=1000000,
-            power=StateManager.get_config('boss1', 'spell_power'),
+            power=StateManager.get_state('boss1', 'spell_power'),
             typeid='boss1_spell1'
         )
 
@@ -106,7 +106,7 @@ class DefaultStage2BossWeapon(BossWeapon):
         self.ENEMY_IMAGES 중 랜덤 이미지를 사용한다
         '''
         # get config
-        enemy_imgs = StateManager.get_config('enemy', 'imgs')
+        enemy_imgs = StateManager.get_state('enemy', 'imgs')
         enemyid = random.randint(0, len(enemy_imgs)-1)
 
         delta_pos = Vector2((150, 0)).rotate(random.random()*360)
@@ -115,12 +115,12 @@ class DefaultStage2BossWeapon(BossWeapon):
         new_enemy = Enemy(
             pos=(boss_pos+delta_pos)[:],
             img=enemy_imgs[enemyid],
-            speed=(0, StateManager.get_config('enemy', 'speed')),
-            boundary_rect=StateManager.get_config(
+            speed=(0, StateManager.get_state('enemy', 'speed')),
+            boundary_rect=StateManager.get_state(
                 'stage2', 'entity_boundary'),
-            score=StateManager.get_config('enemy', 'score'),
-            health=StateManager.get_config('enemy', 'health'),
-            power=StateManager.get_config('enemy', 'power'),
+            score=StateManager.get_state('enemy', 'score'),
+            health=StateManager.get_state('enemy', 'health'),
+            power=StateManager.get_state('enemy', 'power'),
             typeid=f'default{enemyid}'
         )
 
@@ -130,8 +130,8 @@ class DefaultStage2BossWeapon(BossWeapon):
         self.enemies.remove_entity(enemy)
 
     def add_score(self, adding_score: int):
-        StateManager.set_config(
+        StateManager.set_state(
             'global',
             'score',
-            StateManager.get_config('global', 'score')+adding_score
+            StateManager.get_state('global', 'score')+adding_score
         )

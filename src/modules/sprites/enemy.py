@@ -7,13 +7,6 @@ from ...interfaces.game_state import StateManager
 
 
 class Enemy(Entity):
-    '''
-    죽을 때
-    EventListener.call_event('delete')
-    EventListener.call_event('add_score')
-    호출
-    '''
-
     def __init__(self, **kwargs):
         '''
         pos: (x, y) | 초기 위치
@@ -48,7 +41,6 @@ class Enemy(Entity):
     def attacked(self, attack_power: int):
         '''
         적은 attack_power만큼 피해를 입는다
-        적이 죽으면 func_increase_score(score)을 실행한다
         '''
         self.health -= attack_power
         # 체력이 0이하이면 죽는다

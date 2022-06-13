@@ -8,6 +8,7 @@ from pygame import Vector2
 from ...interfaces.event_listener import EventListener
 from ...interfaces.game_state import StateManager
 from ..weapons.player_weapon import PlayerWeapon
+from ...interfaces.utils import *
 
 
 class Player(EventListener):
@@ -27,18 +28,19 @@ class Player(EventListener):
         '''
 
         super().__init__()
-        default_speed = StateManager.get_config('player', 'speed')
+        default_speed = StateManager.get_state('player', 'speed')
 
-        StateManager.get_config('player', 'pos')
-        self.pos: Vector2 = Vector2(StateManager.get_config('player', 'pos'))
-        self.img: pygame.Surface = StateManager.get_config('player', 'img')
+        StateManager.get_state('player', 'pos')
+        self.pos: Vector2 = Vector2(StateManager.get_state('player', 'pos'))
+        self.img: pygame.Surface = StateManager.get_state('player', 'img')
         self.speed: Vector2 = Vector2((default_speed, default_speed))
-        self.boundary_rect: pygame.Rect = StateManager.get_config(
+        self.boundary_rect: pygame.Rect = StateManager.get_state(
             'player', 'boundary_rect')
-        self.weapon: PlayerWeapon = StateManager.get_config(
+        self.weapon: PlayerWeapon = StateManager.get_state(
             'player', 'weapon')
-        self.power = StateManager.get_config('player', 'power')
-        self.health: int = StateManager.get_config('player', 'health')
+        self.power = StateManager.get_state('player', 'power')
+        self.health: int = StateManager.get_state('player', 'health')
+        self.max_health = self.health
 
     def get_pos(self) -> tuple[int, int]:
         return self.pos[:]
@@ -51,6 +53,19 @@ class Player(EventListener):
         self.health += health
         if self.health <= 0:
             self.call_event('delete')
+
+    def render_health_bar(self):
+        bar_width, bar_height = 16, 100
+        bar = pygame.Surface((bar_width, bar_height+20))
+        bar.fill((255, 255, 255))
+        pygame.draw.rect(bar, (255, 0, 0), [
+                         0, 0, bar_width, bar_height])
+        pygame.draw.rect(bar, (0, 255, 0), [
+                         0, 0, bar_width, bar_height * self.health // self.max_health])
+        heart = pygame.image.load('./asset/img/heart.png')
+        blit_item(bar, heart, bottomright=bar.get_rect().bottomright)
+
+        return bar
 
     def moveto(self, x, y):
         '''

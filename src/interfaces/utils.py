@@ -13,11 +13,11 @@ def get_direction(src: tuple[float, float], dst: tuple[float, float]) -> tuple[f
     return ((dst[0]-src[0])/d, (dst[1]-src[1])/d)
 
 
-def render_text(msg: str, color: tuple[int, int, int], font_size=24) -> pygame.Surface:
+def render_text(msg: str, color: tuple[int, int, int], font_size=20) -> pygame.Surface:
     '''
     문자열 msg를 color 색깔로 render해서 return한다
     '''
-    font = pygame.font.Font(None, font_size)
+    font = pygame.font.Font('asset\GmarketSansTTFMedium.ttf', font_size)
     return font.render(msg, True, color)
 
 
@@ -33,11 +33,11 @@ def blit_item(screen: pygame.Surface, item: pygame.Surface, **kwargs):
     screen.blit(item, item_rect)
 
 
-def draw_text(screen: pygame.Surface, msg: str, color: tuple[int, int, int], **kwargs):
+def blit_text(screen: pygame.Surface, msg: str, color: tuple[int, int, int] = (0, 0, 0), font_size: int = 24, **kwargs):
     '''
     kwargs에는 rect의 prop을 전달해야 한다
     ex) center = (10,100)
         left = 10, top = 100
     '''
-    text: pygame.Surface = render_text(msg, color)
+    text: pygame.Surface = render_text(msg, color, font_size)
     blit_item(screen, text, **kwargs)

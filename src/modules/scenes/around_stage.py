@@ -50,7 +50,7 @@ class AroundStage(Scene):
 
         self.summon_boss()
 
-        self.player.boundary_rect = StateManager.get_config(
+        self.player.boundary_rect = StateManager.get_state(
             'stage2', 'entity_boundary')
         # 플레이어 무기
         default_weapon = DefaultPlayerWeapon(
@@ -62,7 +62,7 @@ class AroundStage(Scene):
         # 소환자
         default_item_summoner = DefaultStage2ItemSummoner(
             cooltime_range=(25, 50),
-            heal=StateManager.get_config('item', 'heal')
+            heal=StateManager.get_state('item', 'heal')
         )
         self.item_summoner = default_item_summoner
 
@@ -75,25 +75,23 @@ class AroundStage(Scene):
     # callbacks ------------------------------------------------
 
     def summon_boss(self):
-        img: pygame.Surface = StateManager.get_config('boss1', 'boss1_img')
+        img: pygame.Surface = StateManager.get_state('boss1', 'boss1_img')
         img_rect = img.get_rect()
         img_rect.top = 20
-        img_rect.centerx = StateManager.get_config(
+        img_rect.centerx = StateManager.get_state(
             'stage2', 'entity_boundary').centerx
         self.boss = Boss1(
             pos=img_rect.topleft,
-            img=StateManager.get_config('boss1', 'boss1_img'),
-            speed=(StateManager.get_config('boss1', 'boss1_speed'), 0),
-            boundary_rect=StateManager.get_config(
+            img=StateManager.get_state('boss1', 'boss1_img'),
+            speed=(StateManager.get_state('boss1', 'boss1_speed'), 0),
+            boundary_rect=StateManager.get_state(
                 'stage2', 'entity_boundary'),
-            score=StateManager.get_config('boss1', 'boss1_score'),
-            health=StateManager.get_config('boss1', 'boss1_health'),
+            score=StateManager.get_state('boss1', 'boss1_score'),
+            health=StateManager.get_state('boss1', 'boss1_health'),
             power=1,
             typeid='stage2_boss1'
         )
-        self.boss.add_event_listener('delete', self.stage_clear)
-        self.boss.add_event_listener(
-            'add_score', self.add_score, self.boss.score)
+
         self.enemies.add_entity(self.boss)
 
         # 보스 무기
@@ -101,6 +99,7 @@ class AroundStage(Scene):
         default_boss_weapon.bind_boss(self.boss)
         self.boss.set_weapon(default_boss_weapon)
 
+        self.enemies.add_entity(self.boss)
         return True
 
     def game_over(self):
@@ -112,7 +111,8 @@ class AroundStage(Scene):
         self.call_event('stage_clear')
 
     def end_stage(self):
-        StateManager.set_config('player', 'health', self.player.health)
+        StateManager.set_state('player', 'health', self.player.health)
+        StateManager.set_state('player', 'weapon', self.player.weapon)
         self.timer_manager.clear_all_timers()
         self.items.clear_entities()
         self.bullets.clear_entities()
@@ -120,18 +120,8 @@ class AroundStage(Scene):
 
     # ------------------------------------------------ callbacks
 
-    def add_score(self, adding_score: int):
-        '''
-        점수를 score만큼 증가시킨다
-        '''
-        StateManager.set_config(
-            'global', 'score', self.get_score()+adding_score)
-
-    def get_score(self):
-        return StateManager.get_config('global', 'score')
-
     def update_enemy_speed(self):
-        default_speed = StateManager.get_config('enemy', 'speed') // 3
+        default_speed = StateManager.get_state('enemy', 'speed') // 3
         for enemy in self.enemies.array:
             direction = get_direction(enemy.pos, self.player.get_pos())
             enemy.speed = [direction[0] * default_speed,
@@ -183,9 +173,9 @@ class AroundStage(Scene):
         '''
 
         # get config
-        BACKGROUND = StateManager.get_config('stage2', 'background')
-        TEXT_COLOR = StateManager.get_config('global', 'text_color')
-        ENTITY_BOUNDARY: pygame.Rect = StateManager.get_config(
+        BACKGROUND = StateManager.get_state('stage2', 'background')
+        TEXT_COLOR = StateManager.get_state('global', 'text_color')
+        ENTITY_BOUNDARY: pygame.Rect = StateManager.get_state(
             'stage2', 'entity_boundary')
         temp_screen = pygame.Surface(
             (ENTITY_BOUNDARY.width, ENTITY_BOUNDARY.height))
@@ -204,17 +194,19 @@ class AroundStage(Scene):
 
         screen.blit(BACKGROUND, (0, 0))
         screen.blit(temp_screen, (0, 0), camera_rect)
-        draw_text(
+        topright = screen.get_rect().topright
+
+        blit_text(
             screen=screen,
-            msg=f'Score: {str(self.get_score()).zfill(6)}',
+            msg=f'Score: {str(StateManager.get_score()).zfill(6)}',
             color=TEXT_COLOR,
-            center=(400, 10)
+            topright=topright
         )
-        draw_text(
+        blit_text(
             screen=screen,
             msg=f'Health: {self.player.health}',
             color=TEXT_COLOR,
-            center=(400, 40)
+            topright=(topright[0], topright[1]+30)
         )
 
         info_pos = list(screen.get_rect().midbottom)
@@ -226,7 +218,7 @@ class AroundStage(Scene):
         )
 
     def get_camera_rect(self):
-        camera_rect: pygame.Rect = StateManager.get_config(
+        camera_rect: pygame.Rect = StateManager.get_state(
             'global', 'screen_rect').copy()
         camera_rect.center = self.player.get_rect().center
         return camera_rect
@@ -235,11 +227,12 @@ class AroundStage(Scene):
         '''
         매 프레임마다 실행되어 게임을 업데이트 한다
         '''
+
         # 시간에 따른 점수 증가
-        self.add_score(1)
+        StateManager.add_score(1)
 
         # 점수에 따른 레벨업
-        if self.get_score() >= self.next_level_score:
+        if StateManager.get_score() >= self.next_level_score:
             self.when_level_up()
 
         # 엔티티 소환
@@ -263,6 +256,6 @@ class AroundStage(Scene):
         self.items.update()
 
     def when_level_up(self):
-        fps = StateManager.get_config('global', 'fps')
-        StateManager.set_config('global', 'fps', fps+1)
+        fps = StateManager.get_state('global', 'fps')
+        StateManager.set_state('global', 'fps', fps+1)
         self.next_level_score += self.level_interval

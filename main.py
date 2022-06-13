@@ -12,6 +12,7 @@ from src.modules.scenes.around_stage import AroundStage
 from src.modules.scenes.finish_scene import FinishScene
 from src.modules.scenes.game_stage import GameStage
 from src.modules.scenes.open_scene import OpeningScene
+from src.modules.scenes.shop_scene import ShopScene
 from src.modules.weapons.player_weapon import *
 
 pygame.init()
@@ -24,24 +25,27 @@ SCREEN_RECT = SCREEN.get_rect()
 # 3 - 그림과 효과음 삽입
 try:
     # 3.1 - 그림 삽입
-    player_img = pygame.image.load("./img/player.jpg")
+    player_img = pygame.image.load("./asset/img/player.jpg")
     player_img = pygame.transform.scale(player_img, (192//4, 250//4))
-    asteroid0 = pygame.image.load("./img/asteroid00.png")
-    asteroid1 = pygame.image.load("./img/asteroid01.png")
-    asteroid2 = pygame.image.load("./img/asteroid02.png")
-    asteroidimgs = (asteroid0, asteroid1, asteroid2)
-    gameover_image = pygame.image.load("./img/gameover.jpg")
+    book = pygame.image.load("./asset/img/book.png")
+    book = pygame.transform.scale(book, (378//10, 267//10))
+    computer = pygame.image.load("./asset/img/computer.png")
+    computer = pygame.transform.scale(computer, (177//5, 115//5))
+    note = pygame.image.load("./asset/img/note.png")
+    note = pygame.transform.scale(note, (177//5, 115//5))
+    asteroidimgs = (computer, book, note)
+    gameover_image = pygame.image.load("./asset/img/gameover.jpg")
 
-    bullet_imgs = (pygame.image.load("./img/bullet01.png"),)
-    start_image = (pygame.image.load("./img/opening_scene.png"))
+    bullet_imgs = (pygame.image.load("./asset/img/bullet01.png"),)
+    start_image = (pygame.image.load("./asset/img/opening_scene.png"))
     start_image = pygame.transform.scale(
         start_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
-    bullet_img = pygame.image.load("./img/bullet01.png")
-    shotgun_img = pygame.image.load("./img/shotgun01.png")
-    item_imgs = (pygame.image.load("./img/item01.png"),)
-    boss1_spell_img = pygame.image.load("./img/boss1_spell1.png")
-    boss1_img = pygame.image.load("./img/boss1.png")
+    bullet_img = pygame.image.load("./asset/img/bullet01.png")
+    shotgun_img = pygame.image.load("./asset/img/shotgun01.png")
+    item_imgs = (pygame.image.load("./asset/img/item01.png"),)
+    boss1_spell_img = pygame.image.load("./asset/img/boss1_spell1.png")
+    boss1_img = pygame.image.load("./asset/img/boss1.png")
     boss1_img = pygame.transform.scale(boss1_img, (192//2, 250//2))
 
     # 3.2 - 효과음 삽입
@@ -67,14 +71,13 @@ fpsClock = pygame.time.Clock()
 
 
 # object config
-config_manager = StateManager()
+state_manager = StateManager()
 
-global_config = GameState(
+global_state = GameState(
     screen_width=480,
     screen_height=640,
     text_color=BLACK,
     fps=FPS,
-    score=0,
     screen_rect=SCREEN_RECT
 )
 stage1_config = GameState(
@@ -118,20 +121,22 @@ player_config = GameState(
     pos=(SCREEN_WIDTH//2, SCREEN_HEIGHT*3//4),
     img=player_img,
     speed=5,
-    boundary_rect=SCREEN_RECT,
     weapon=None,
+    boundary_rect=SCREEN_RECT,
+    score=0,
     power=100,
-    health=20000
+    gold=0,
+    health=1000
 )
 
-config_manager.add_config('global', global_config)
-config_manager.add_config('stage1', stage1_config)
-config_manager.add_config('stage2', stage2_config)
-config_manager.add_config('enemy', enemy_config)
-config_manager.add_config('bullet', bullet_config)
-config_manager.add_config('item', item_config)
-config_manager.add_config('boss1', boss_config)
-config_manager.add_config('player', player_config)
+state_manager.add_state('global', global_state)
+state_manager.add_state('stage1', stage1_config)
+state_manager.add_state('stage2', stage2_config)
+state_manager.add_state('enemy', enemy_config)
+state_manager.add_state('bullet', bullet_config)
+state_manager.add_state('item', item_config)
+state_manager.add_state('boss1', boss_config)
+state_manager.add_state('player', player_config)
 
 
 # scenes
@@ -173,23 +178,29 @@ finish_scene = FinishScene(
 )
 scene_manager.add_scene('finish_scene', finish_scene)
 
+# shop_scene
+shop_scene = ShopScene(background=background)
+scene_manager.add_scene('shop_scene', shop_scene)
+
 # start with opening_scene
 scene_manager.current_scene = opening_scene
 scene_manager.next_scene = opening_scene
 
+# StateManager.add_gold(10000)
+# scene_manager.current_scene = shop_scene
+# scene_manager.next_scene = shop_scene
+
 
 # 7 game loop
 while True:
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            exit()
-
     scene_manager.update()
 
     SCREEN.fill((255, 255, 255))
     scene_manager.draw(SCREEN)
 
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            exit()
     fpsClock.tick(scene_manager.fps)
     pygame.display.update()
