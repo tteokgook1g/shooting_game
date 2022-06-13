@@ -54,11 +54,16 @@ class Boss1(Enemy):
         k = 2.5
         cx = self.get_rect().centerx
         screenx = StateManager.get_state('stage1', 'entity_boundary').centerx
+        if cx<=49:
+            self.speed[0]=2.5
+        if cx>=400:
+            self.speed[0]=-2.5
         if self.counter==0:
             self.speed[0]=k*(numpy.random.normal()+1)*self.direction
             self.direction*=-1
             self.counter=numpy.random.randint(10,20)
         self.counter-=1
+        
 
     def draw(self, screen: pygame.Surface):
         super().draw(screen)
