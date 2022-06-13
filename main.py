@@ -32,7 +32,7 @@ try:
     computer = pygame.image.load("./asset/img/computer.png")
     computer = pygame.transform.scale(computer, (177//5, 115//5))
     note = pygame.image.load("./asset/img/note.png")
-    note = pygame.transform.scale(note, (177//5, 115//5))
+    note = pygame.transform.scale(note, (183//6, 205//6))
     asteroidimgs = (computer, book, note)
     gameover_image = pygame.image.load("./asset/img/gameover.jpg")
 
