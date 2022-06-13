@@ -14,12 +14,12 @@ class GameState():
     def __init__(self, **kwargs):
         self.config: dict[str, Any] = {}
         for k, v in kwargs.items():
-            self.set_config(k, v)
+            self.set_state(k, v)
 
-    def get_config(self, name: str):
+    def get_state(self, name: str):
         return self.config[name]
 
-    def set_config(self, name: str, value):
+    def set_state(self, name: str, value):
         self.config[name] = value
 
 
@@ -31,33 +31,33 @@ class StateManager():
     configs: dict[str, GameState] = {}
 
     @classmethod
-    def get_config(cls, type: str, name: str):
-        return cls.configs[type].get_config(name)
+    def get_state(cls, type: str, name: str):
+        return cls.configs[type].get_state(name)
 
     @classmethod
-    def set_config(cls, type: str, name: str, value):
-        cls.configs[type].set_config(name, value)
+    def set_state(cls, type: str, name: str, value):
+        cls.configs[type].set_state(name, value)
 
     @classmethod
-    def add_config(cls, type: str, config: GameState):
+    def add_state(cls, type: str, config: GameState):
         cls.configs[type] = config
 
     # 많이 참조하는 state 함수로 만든다
     @classmethod
     def get_score(cls):
-        return cls.get_config('player', 'score')
+        return cls.get_state('player', 'score')
 
     @classmethod
     def add_score(cls, adding_score):
-        cls.set_config('player', 'score', cls.get_score()+adding_score)
+        cls.set_state('player', 'score', cls.get_score()+adding_score)
 
     @classmethod
     def get_gold(cls):
-        return cls.get_config('player', 'gold')
+        return cls.get_state('player', 'gold')
 
     @classmethod
     def add_gold(cls, adding_gold):
-        cls.set_config('player', 'gold', cls.get_gold()+adding_gold)
+        cls.set_state('player', 'gold', cls.get_gold()+adding_gold)
 
     def __new__(self):
         return StateManager

@@ -20,6 +20,25 @@ class PlayerWeapon():
         self.bullets = EntityManagerFactory.get_manager('bullet')
         self.COLOR_DEACTIVATED = pygame.color.Color(150, 150, 150, 100)
 
+        self.power = 0.0  # 현재 공격력
+        self.next_power = 0.0  # 다음 공격력
+        self.cost = 0  # 레벨업 가격
+        self.name = ''  # 스킬 이름
+        self.description = ''  # 스킬 설명
+        self.info_img = None  # 상점 이미지
+
+    def level_up(self):
+        self.power = self.next_power
+        self.cost *= 1.1
+
+    def purchase_level_up(self):
+        if StateManager.get_gold() >= self.cost:
+            StateManager.add_gold(-self.cost)
+            self.level_up()
+
+    def _render_shop_info_list(self):
+        return []
+
     def attack(self):
         pass
 
@@ -48,6 +67,25 @@ class PlayerWeapon():
 
         return result
 
+    def render_shop_info(self):
+        gap_width = 10
+        infos: list[pygame.Surface] = self._render_shop_info_list()
+        screen_width = sum(map(lambda x: x.get_rect().width,
+                           infos))+gap_width*(len(infos)-1)
+        screen_height = max(
+            map(lambda x: x.get_rect().height, infos))
+
+        result = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
+        result.fill((255, 255, 255))
+
+        curr_point = Vector2(0, 0)
+
+        for info in infos:
+            result.blit(info, curr_point[:])
+            curr_point.x += gap_width+info.get_rect().width
+
+        return result
+
 
 class WeaponDecorator(PlayerWeapon):
     'interface WeaponDecorator'
@@ -59,9 +97,18 @@ class WeaponDecorator(PlayerWeapon):
     def attack(self):
         self._weapon.attack()
 
+    def level_up(self):
+        super().level_up()
+
+    def purchase_level_up(self):
+        super().purchase_level_up()
+
     def bind_player(self, player):
         super().bind_player(player)
         self._weapon.bind_player(player)
+
+    def _render_shop_info_list(self):
+        return self._weapon._render_shop_info_list()
 
     def _render_skill_info_list(self):
         return self._weapon._render_skill_info_list()
@@ -81,6 +128,32 @@ class DefaultPlayerWeapon(PlayerWeapon):
 
         self.cooltime = cooltime
 
+        self.name = '기본공격'
+        self.description = 'Space로 공격'
+        self.power = 100.0
+        self.next_power = 110.0
+        self.cost = 100
+        self.info_img = StateManager.get_state('bullet', 'bullet_img')
+
+    def level_up(self):
+        super().level_up()
+        self.next_power *= 1.1
+
+    def _render_shop_info_list(self):
+        result = pygame.Surface((100, 110))
+        rect = result.get_rect()
+        result.fill((255, 255, 255))
+        blit_item(result, pygame.transform.scale(
+            self.info_img, (80, 80)), midtop=rect.midtop)
+        blit_text(result, f'{int(self.power)} → {int(self.next_power)}', font_size=16,
+                  midbottom=rect.midbottom)
+        pygame.draw.rect(result, (0, 0, 0), result.get_rect(), 2)
+
+        other = super()._render_shop_info_list()
+        other.append(result)
+
+        return other
+
     def attack(self):
         '''
         새로운 총알을 생성한다
@@ -96,7 +169,7 @@ class DefaultPlayerWeapon(PlayerWeapon):
         '''
 
         # get config
-        bullet_img: pygame.Surface = StateManager.get_config(
+        bullet_img: pygame.Surface = StateManager.get_state(
             'bullet', 'bullet_img')
 
         player_rect: pygame.Rect = self.player.get_rect()
@@ -109,10 +182,10 @@ class DefaultPlayerWeapon(PlayerWeapon):
         new_bullet = Bullet(
             pos=img_rect.topleft,
             img=bullet_img,
-            speed=(0, -StateManager.get_config('bullet', 'speed')),
-            boundary_rect=StateManager.get_config(
+            speed=(0, -StateManager.get_state('bullet', 'speed')),
+            boundary_rect=StateManager.get_state(
                 'stage2', 'entity_boundary'),
-            power=self.player.power
+            power=self.power
         )
         new_bullet.add_event_listener(
             'delete', self.delete_bullet, new_bullet)
@@ -122,7 +195,7 @@ class DefaultPlayerWeapon(PlayerWeapon):
         self.bullets.remove_entity(bullet)
 
     def _render_skill_info_list(self):
-        bullet_img: pygame.Surface = StateManager.get_config(
+        bullet_img: pygame.Surface = StateManager.get_state(
             'bullet', 'bullet_img')
         bullet_img = pygame.transform.scale(bullet_img, (50, 50))
 
@@ -132,10 +205,13 @@ class DefaultPlayerWeapon(PlayerWeapon):
             bullet_img.blit(temp, (0, 0))
 
             cooltime_text = render_text(
-                f'{self.timer.time}', StateManager.get_config('global', 'text_color'), 16)
+                f'{self.timer.time}', StateManager.get_state('global', 'text_color'), 16)
             blit_item(bullet_img, cooltime_text, bottomright=(50, 50))
 
-        return [bullet_img]
+        other = super()._render_shop_info_list()
+        other.append(bullet_img)
+
+        return other
 
 
 class ShotgunDecorator(WeaponDecorator):
@@ -148,6 +224,32 @@ class ShotgunDecorator(WeaponDecorator):
         manager.set_manual_timer(self.timer, 'player_shotgun')
 
         self.cooltime = cooltime
+
+        self.name = '샷건공격'
+        self.description = 'E로 공격'
+        self.power = 25.0
+        self.next_power = 27.5
+        self.cost = 120
+        self.info_img = StateManager.get_state('bullet', 'shotgun_img')
+
+    def level_up(self):
+        super().level_up()
+        self.next_power *= 1.1
+
+    def _render_shop_info_list(self):
+        result = pygame.Surface((100, 110))
+        rect = result.get_rect()
+        result.fill((255, 255, 255))
+        blit_item(result, pygame.transform.scale(
+            self.info_img, (80, 80)), midtop=rect.midtop)
+        blit_text(result, f'{int(self.power)} → {int(self.next_power)}', font_size=16,
+                  midbottom=rect.midbottom)
+        pygame.draw.rect(result, (0, 0, 0), result.get_rect(), 2)
+
+        other = super()._render_shop_info_list()
+        other.append(result)
+
+        return other
 
     def attack(self):
         super().attack()
@@ -163,7 +265,7 @@ class ShotgunDecorator(WeaponDecorator):
         NUM_OF_BULLET = 24
 
         # get config
-        shotgun_img: pygame.Surface = StateManager.get_config(
+        shotgun_img: pygame.Surface = StateManager.get_state(
             'bullet', 'shotgun_img')
 
         player_rect: pygame.Rect = self.player.get_rect()
@@ -173,8 +275,8 @@ class ShotgunDecorator(WeaponDecorator):
         img_rect.bottom = player_rect.top
         img_rect.centerx = player_rect.centerx
 
-        speed = StateManager.get_config('bullet', 'speed')
-        boundary_rect = StateManager.get_config(
+        speed = StateManager.get_state('bullet', 'speed')
+        boundary_rect = StateManager.get_state(
             'stage2', 'entity_boundary')
 
         for i in range(NUM_OF_BULLET):
@@ -189,7 +291,7 @@ class ShotgunDecorator(WeaponDecorator):
                 img=shotgun_img,
                 speed=(speed*delta_pos.normalize())[:],
                 boundary_rect=boundary_rect,
-                power=self.player.power//4
+                power=self.power
             )
             new_bullet.add_event_listener(
                 'delete', self.delete_bullet, new_bullet)
@@ -199,7 +301,7 @@ class ShotgunDecorator(WeaponDecorator):
         self.bullets.remove_entity(bullet)
 
     def _render_skill_info_list(self):
-        shotgun_img: pygame.Surface = StateManager.get_config(
+        shotgun_img: pygame.Surface = StateManager.get_state(
             'bullet', 'shotgun_img')
         shotgun_img = pygame.transform.scale(shotgun_img, (50, 50))
 
@@ -209,7 +311,7 @@ class ShotgunDecorator(WeaponDecorator):
             shotgun_img.blit(temp, (0, 0))
 
             cooltime_text = render_text(
-                f'{self.timer.time}', StateManager.get_config('global', 'text_color'), 16)
+                f'{self.timer.time}', StateManager.get_state('global', 'text_color'), 16)
             blit_item(shotgun_img, cooltime_text, bottomright=(50, 50))
 
         other = super()._render_skill_info_list()

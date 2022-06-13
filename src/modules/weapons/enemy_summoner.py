@@ -56,20 +56,20 @@ class DefaultStage1EnemySummoner(EnemySummoner):
         self.ENEMY_IMAGES 중 랜덤 이미지를 사용한다
         '''
         # get config
-        offset = StateManager.get_config('enemy', 'enemy_offset_width')
-        screen_width = StateManager.get_config('global', 'screen_width')
-        enemy_imgs = StateManager.get_config('enemy', 'imgs')
+        offset = StateManager.get_state('enemy', 'enemy_offset_width')
+        screen_width = StateManager.get_state('global', 'screen_width')
+        enemy_imgs = StateManager.get_state('enemy', 'imgs')
         enemyid = random.randint(0, len(enemy_imgs)-1)
 
         new_enemy = Enemy(
             pos=(random.randint(offset, screen_width-offset), 0),
             img=enemy_imgs[enemyid],
-            speed=(0, StateManager.get_config('enemy', 'speed')),
-            boundary_rect=StateManager.get_config(
+            speed=(0, StateManager.get_state('enemy', 'speed')),
+            boundary_rect=StateManager.get_state(
                 'stage1', 'entity_boundary'),
-            score=StateManager.get_config('enemy', 'score'),
-            health=StateManager.get_config('enemy', 'health'),
-            power=StateManager.get_config('enemy', 'power'),
+            score=StateManager.get_state('enemy', 'score'),
+            health=StateManager.get_state('enemy', 'health'),
+            power=StateManager.get_state('enemy', 'power'),
             typeid=f'default{enemyid}'
         )
 
@@ -79,8 +79,8 @@ class DefaultStage1EnemySummoner(EnemySummoner):
         self.enemies.remove_entity(enemy)
 
     def add_score(self, adding_score: int):
-        StateManager.set_config(
+        StateManager.set_state(
             'global',
             'score',
-            StateManager.get_config('global', 'score')+adding_score
+            StateManager.get_state('global', 'score')+adding_score
         )

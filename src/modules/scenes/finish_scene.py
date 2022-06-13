@@ -23,6 +23,6 @@ class FinishScene(Scene):
         blit_text(
             screen=screen,
             msg=f'Score: {str(self.score).zfill(6)}',
-            color=StateManager.get_config('global', 'text_color'),
-            center=StateManager.get_config('global', 'screen_rect').center
+            color=StateManager.get_state('global', 'text_color'),
+            center=StateManager.get_state('global', 'screen_rect').center
         )

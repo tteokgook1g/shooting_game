@@ -14,6 +14,9 @@ from ..weapons.enemy_summoner import *
 from ..weapons.item_summoner import *
 from ..weapons.player_weapon import *
 
+GRADE = {0: 'F', 1: 'D-', 2: 'D0', 3: 'D+', 4: 'C-', 5: 'C0',
+         6: 'C+', 7: 'B-', 8: 'B0', 9: 'B+', 10: 'A-', 11: 'A0', 12: 'A+'}
+
 
 class GameStage(Scene):
     '''
@@ -42,6 +45,7 @@ class GameStage(Scene):
         self.enemy_summoner = None
         self.level_interval = level_interval
         self.next_level_score = level_interval
+        self.grade = 0
 
     def start_scene(self):
         self.player = Player()
@@ -59,7 +63,7 @@ class GameStage(Scene):
         # 소환자
         default_item_summoner = DefaultStage1ItemSummoner(
             cooltime_range=(25, 50),
-            heal=StateManager.get_config('item', 'heal')
+            heal=StateManager.get_state('item', 'heal')
         )
         self.item_summoner = default_item_summoner
 
@@ -72,7 +76,7 @@ class GameStage(Scene):
         self.timer_manager = TimerManager()
 
         summon_boss_timer = Timer()
-        summon_boss_timer.set_timeout(StateManager.get_config(
+        summon_boss_timer.set_timeout(StateManager.get_state(
             'boss1', 'boss1_summon_delay'), self.summon_boss)
         self.timer_manager.set_timer(
             summon_boss_timer, 'stage1_summon_boss_timer', None)
@@ -83,19 +87,19 @@ class GameStage(Scene):
     # callbacks ------------------------------------------------
 
     def summon_boss(self):
-        img: pygame.Surface = StateManager.get_config('boss1', 'boss1_img')
+        img: pygame.Surface = StateManager.get_state('boss1', 'boss1_img')
         img_rect = img.get_rect()
         img_rect.top = 20
-        img_rect.centerx = StateManager.get_config(
+        img_rect.centerx = StateManager.get_state(
             'stage1', 'entity_boundary').centerx
         self.boss = Boss1(
             pos=img_rect.topleft,
-            img=StateManager.get_config('boss1', 'boss1_img'),
-            speed=(StateManager.get_config('boss1', 'boss1_speed'), 0),
-            boundary_rect=StateManager.get_config(
+            img=StateManager.get_state('boss1', 'boss1_img'),
+            speed=(StateManager.get_state('boss1', 'boss1_speed'), 0),
+            boundary_rect=StateManager.get_state(
                 'stage1', 'entity_boundary'),
-            score=StateManager.get_config('boss1', 'boss1_score'),
-            health=StateManager.get_config('boss1', 'boss1_health'),
+            score=StateManager.get_state('boss1', 'boss1_score'),
+            health=StateManager.get_state('boss1', 'boss1_health'),
             power=1000000,
             typeid='stage1_boss1'
         )
@@ -118,7 +122,8 @@ class GameStage(Scene):
         self.call_event('stage_clear')
 
     def end_stage(self):
-        StateManager.set_config('player', 'health', self.player.health)
+        StateManager.set_state('player', 'health', self.player.health)
+        StateManager.set_state('player', 'weapon', self.player.weapon)
         self.timer_manager.clear_all_timers()
         self.items.clear_entities()
         self.bullets.clear_entities()
@@ -172,8 +177,8 @@ class GameStage(Scene):
         '''
 
         # get config
-        BACKGROUND = StateManager.get_config('stage1', 'background')
-        TEXT_COLOR = StateManager.get_config('global', 'text_color')
+        BACKGROUND = StateManager.get_state('stage1', 'background')
+        TEXT_COLOR = StateManager.get_state('global', 'text_color')
 
         screen.blit(BACKGROUND, (0, 0))
         self.player.draw(screen)
@@ -184,18 +189,17 @@ class GameStage(Scene):
         for enemy in self.enemies.array:
             enemy.draw(screen)
 
-        blit_text(
-            screen=screen,
-            msg=f'Score: {str(StateManager.get_score()).zfill(6)}',
-            color=TEXT_COLOR,
-            center=(400, 10)
-        )
-        blit_text(
-            screen=screen,
-            msg=f'Health: {self.player.health}',
-            color=TEXT_COLOR,
-            center=(400, 40)
-        )
+        topright = screen.get_rect().topright
+        # blit_text(
+        #     screen=screen,
+        #     msg=f'Score: {str(StateManager.get_score()).zfill(6)}',
+        #     color=TEXT_COLOR,
+        #     topright=topright
+        # )
+        blit_item(screen, self.render_score_bar(),
+                  topright=(topright[0]-25, topright[1]+30))
+        blit_item(screen, self.player.render_health_bar(),
+                  topright=(topright[0]-5, topright[1]+30))
 
         info_pos = list(screen.get_rect().midbottom)
         info_pos[1] -= 10
@@ -204,6 +208,28 @@ class GameStage(Scene):
             item=self.player.weapon.render_skill_info(),
             midbottom=info_pos
         )
+
+    def render_score_bar(self):
+        bar_width, bar_height = 16, 100
+        bar = pygame.Surface((bar_width, bar_height))
+        bar.fill((255, 255, 255))
+        if self.grade == len(GRADE):
+            pygame.draw.rect(bar, (0, 0, 255), [0, 0, bar_width, bar_height])
+            text = render_text(GRADE[self.grade - 1], (0, 0, 0), 12)
+        else:
+            pygame.draw.rect(bar, (0, 0, 0), [
+                0, 0, bar_width, bar_height], 2)
+            pygame.draw.rect(bar, (0, 0, 255), [
+                0, 0, bar_width, bar_height * (StateManager.get_score()-self.next_level_score+self.level_interval) // self.level_interval])
+            bar = pygame.transform.rotate(bar, 180)
+            text = render_text(GRADE[self.grade], (0, 0, 0), 12)
+
+        result = pygame.Surface((32, 120))
+        result.fill((255, 255, 255))
+        blit_item(result, bar, midtop=result.get_rect().midtop)
+        blit_item(result, text, midbottom=result.get_rect().midbottom)
+
+        return result
 
     def update(self):
         '''
@@ -238,6 +264,7 @@ class GameStage(Scene):
         self.items.update()
 
     def when_level_up(self):
-        fps = StateManager.get_config('global', 'fps')
-        StateManager.set_config('global', 'fps', fps+1)
+        self.grade += 1
+        if self.grade > len(GRADE):
+            self.grade = len(GRADE)
         self.next_level_score += self.level_interval

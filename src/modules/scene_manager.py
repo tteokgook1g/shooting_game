@@ -15,7 +15,7 @@ class SceneManager(EventListener):
         self.scenes: dict[str, Scene] = {}
         self.current_scene: Scene = None
         self.next_scene: Scene = None
-        self.fps = StateManager.get_config('global', 'fps')
+        self.fps = StateManager.get_state('global', 'fps')
 
     def goto_scene(self, scene_name):
         self.next_scene = self.scenes[scene_name]
@@ -25,7 +25,7 @@ class SceneManager(EventListener):
 
     def update(self):
         # get configs
-        self.fps = StateManager.get_config('global', 'fps')
+        self.fps = StateManager.get_state('global', 'fps')
         if self.current_scene != self.next_scene:
             self.current_scene = self.next_scene
             self.current_scene.start_scene()
