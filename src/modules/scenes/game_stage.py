@@ -95,7 +95,7 @@ class GameStage(Scene):
         self.boss = Boss1(
             pos=img_rect.topleft,
             img=StateManager.get_state('boss1', 'boss1_img'),
-            speed=(StateManager.get_state('boss1', 'boss1_speed'), 0),
+            speed=(0, 0),
             boundary_rect=StateManager.get_state(
                 'stage1', 'entity_boundary'),
             score=StateManager.get_state('boss1', 'boss1_score'),
