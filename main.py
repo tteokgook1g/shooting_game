@@ -69,15 +69,11 @@ background = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 background.fill(WHITE)
 
 
-# 2.2 시간 변수
+# 4 시간 변수
 FPS = 30
 fpsClock = pygame.time.Clock()
 
-
-# 6 class Game
-
-
-# object config
+# 5 object config
 state_manager = StateManager()
 
 global_state = GameState(
@@ -92,7 +88,7 @@ stage1_config = GameState(
     entity_boundary=SCREEN_RECT
 )
 stage2_config = GameState(
-    background=background,
+    background=background,  # 배경화면 설정
     entity_boundary=pygame.Rect(0, 0, 1000, 1000)
 )
 enemy_config = GameState(
@@ -115,13 +111,13 @@ item_config = GameState(
     heal=30  # 플레이어가 얻는 체력
 )
 boss_config = GameState(
-    spell_img=boss1_spell_img,
-    spell_speed=10,
-    spell_power=10,
-    boss1_img=boss1_img,
-    boss1_health=3000,
-    boss1_score=2000,
-    boss1_summon_delay=50
+    spell_img=boss1_spell_img,  # 보스 공격 이미지
+    spell_speed=10,  # 보스의 속도
+    spell_power=10,  # 보스 공격력
+    boss1_img=boss1_img,  # 보스 이미지
+    boss1_health=3000,  # 보스 체력
+    boss1_score=2000,  # 보스 처치시 점수
+    boss1_summon_delay=50  # 스테이지 시작을 기준으로 보스 발생까지 걸리는 프레임 수
 )
 player_config = GameState(
     pos=(SCREEN_WIDTH//2, SCREEN_HEIGHT*3//4),
@@ -130,11 +126,11 @@ player_config = GameState(
     weapon=None,
     boundary_rect=SCREEN_RECT,
     score=0,
-    power=100,
-    gold=0,
-    health=1000
+    power=100,  # 플레이어 공격력
+    gold=0,  # 상점에서 사용할 재화
+    health=1000  # 플래이어 체력
 )
-
+# state_manager에 global_state와 configs 추가
 state_manager.add_state('global', global_state)
 state_manager.add_state('stage1', stage1_config)
 state_manager.add_state('stage2', stage2_config)
@@ -145,14 +141,13 @@ state_manager.add_state('boss1', boss_config)
 state_manager.add_state('player', player_config)
 
 
-# scenes
+# 6 scenes
 scene_manager = SceneManager()
 
 # opening_scene
 opening_scene = OpeningScene(
     background=start_image
 )
-
 opening_scene.add_event_listener(
     'start_game', scene_manager.goto_scene, 'tutorial_stage')
 scene_manager.add_scene('start_scene', opening_scene)
