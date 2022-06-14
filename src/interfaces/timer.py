@@ -80,6 +80,18 @@ class TimerManager():
         self.timers[timer_name] = timer
         self.frames_ranges[timer_name] = frames_range
 
+    def get_timer(self, timer_name):
+        if timer_name in self.timers:
+            return self.timers[timer_name]
+        if timer_name in self.manual_timers:
+            return self.manual_timers[timer_name]
+
+    def remove_timer(self, timer_name):
+        if timer_name in self.timers:
+            self.timers.pop(timer_name)
+        if timer_name in self.manual_timers:
+            self.manual_timers.pop(timer_name)
+
     def set_manual_timer(self, timer: ManualTimer, timer_name: str):
         'timer를 timer_name으로 등록한다'
         self.manual_timers[timer_name] = timer

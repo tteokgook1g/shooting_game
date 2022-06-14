@@ -133,7 +133,8 @@ class DefaultPlayerWeapon(PlayerWeapon):
         self.power = 100.0
         self.next_power = 110.0
         self.cost = 100
-        self.info_img = StateManager.get_state('bullet', 'bullet_img')
+        self.info_img = pygame.transform.scale(
+            StateManager.get_state('bullet', 'bullet_img'), (80, 80))
 
     def level_up(self):
         super().level_up()
@@ -143,8 +144,7 @@ class DefaultPlayerWeapon(PlayerWeapon):
         result = pygame.Surface((100, 110))
         rect = result.get_rect()
         result.fill((255, 255, 255))
-        blit_item(result, pygame.transform.scale(
-            self.info_img, (80, 80)), midtop=rect.midtop)
+        blit_item(result, self.info_img, midtop=rect.midtop)
         blit_text(result, f'{int(self.power)} → {int(self.next_power)}', font_size=16,
                   midbottom=rect.midbottom)
         pygame.draw.rect(result, (0, 0, 0), result.get_rect(), 2)
@@ -171,6 +171,7 @@ class DefaultPlayerWeapon(PlayerWeapon):
         # get config
         bullet_img: pygame.Surface = StateManager.get_state(
             'bullet', 'bullet_img')
+        bullet_img = pygame.transform.scale(bullet_img, (30, 30))
 
         player_rect: pygame.Rect = self.player.get_rect()
 
@@ -227,10 +228,11 @@ class ShotgunDecorator(WeaponDecorator):
 
         self.name = '샷건공격'
         self.description = 'E로 공격'
-        self.power = 25.0
-        self.next_power = 27.5
-        self.cost = 120
-        self.info_img = StateManager.get_state('bullet', 'shotgun_img')
+        self.power = 100.0
+        self.next_power = 110.0
+        self.cost = 150
+        self.info_img = pygame.transform.scale(
+            StateManager.get_state('bullet', 'shotgun_img'), (80, 80))
 
     def level_up(self):
         super().level_up()
@@ -240,8 +242,7 @@ class ShotgunDecorator(WeaponDecorator):
         result = pygame.Surface((100, 110))
         rect = result.get_rect()
         result.fill((255, 255, 255))
-        blit_item(result, pygame.transform.scale(
-            self.info_img, (80, 80)), midtop=rect.midtop)
+        blit_item(result, self.info_img, midtop=rect.midtop)
         blit_text(result, f'{int(self.power)} → {int(self.next_power)}', font_size=16,
                   midbottom=rect.midbottom)
         pygame.draw.rect(result, (0, 0, 0), result.get_rect(), 2)
@@ -267,6 +268,7 @@ class ShotgunDecorator(WeaponDecorator):
         # get config
         shotgun_img: pygame.Surface = StateManager.get_state(
             'bullet', 'shotgun_img')
+        shotgun_img = pygame.transform.scale(shotgun_img, (20, 20))
 
         player_rect: pygame.Rect = self.player.get_rect()
 

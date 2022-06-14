@@ -1,4 +1,4 @@
-'두 번째 스테이지'
+'첫 번째 스테이지'
 
 import pygame
 
@@ -13,9 +13,10 @@ from ..weapons.boss_weapon import *
 from ..weapons.enemy_summoner import *
 from ..weapons.item_summoner import *
 from ..weapons.player_weapon import *
+from ..sprites.dialogue import Dialogue
 
 
-class AroundStage(Scene):
+class TutorialStage(Scene):
     '''
     게임의 스테이지 하나
     스테이지를 시작학 때 start_scene 호출 필요
@@ -39,9 +40,13 @@ class AroundStage(Scene):
         self.bullets = None
         self.items = None
         self.item_summoner = None
+        self.enemy_summoner = None
         self.level_interval = level_interval
-        self.next_level_score = 0
+        self.next_level_score = level_interval
         self.grade = 0
+        self.dialogue = None
+        self.isplay = False
+        self.end_dialogue = False
 
     def start_scene(self):
         self.player = Player()
@@ -50,59 +55,86 @@ class AroundStage(Scene):
         self.items = EntityManagerFactory.get_manager('item')
 
         self.next_level_score = StateManager.get_score()+self.level_interval
-        StateManager.set_state('player', 'speed', 10)
-        StateManager.set_state('enemy', 'speed', 5)
 
-        self.summon_boss()
-
-        self.player.boundary_rect = StateManager.get_state(
-            'stage2', 'entity_boundary')
         # 플레이어 무기
-        # player_weapon = StateManager.get_state('player', 'weapon')
-        player_weapon = None
-        if player_weapon is None:
-            default_weapon = DefaultPlayerWeapon(
-                cooltime=10)
-            player_weapon = ShotgunDecorator(default_weapon, 100)
-            player_weapon.bind_player(self.player)
+        default_weapon = DefaultPlayerWeapon(
+            cooltime=10)
+        player_weapon = ShotgunDecorator(default_weapon, 100)
+        player_weapon.bind_player(self.player)
         self.player.set_weapon(player_weapon)
 
         # 소환자
-        default_item_summoner = DefaultStage2ItemSummoner(
+        default_item_summoner = DefaultStage1ItemSummoner(
             cooltime_range=(25, 50),
             heal=StateManager.get_state('item', 'heal')
         )
         self.item_summoner = default_item_summoner
 
+        default_enemy_summoner = DefaultStage1EnemySummoner(
+            cooltime_range=(5, 20)
+        )
+        self.enemy_summoner = default_enemy_summoner
+
         # 타이머
         self.timer_manager = TimerManager()
+
+        summon_boss_timer = Timer()
+        summon_boss_timer.set_timeout(StateManager.get_state(
+            'boss1', 'boss1_summon_delay'), self.summon_boss)
+        self.timer_manager.set_timer(
+            summon_boss_timer, 'stage0_summon_boss_timer', None)
+
+        self.dialogue_timer = ManualTimer()
+        self.timer_manager.set_manual_timer(
+            self.dialogue_timer, 'stage0_dialogue_timer')
 
         # add event_listener
         self.player.add_event_listener('delete', self.game_over)
 
+        # 대사
+        self.dialogue = Dialogue(self.set_playing)
+        self.dialogue.add_message("WASD로 움직여 보세요", 100)
+        self.dialogue.add_message("SPACEBAR로 기본공격을 해보세요", 100)
+        self.dialogue.add_message(
+            "플레이어가 과제에 닿으면 과제를 시간 안에\n하지 못한 것으로 체력이 닳아요", 0)
+        self.dialogue.add_message("총알이 과제에 맞으면 과제를 해결한 것으로\n학점이 올라요", 100)
+        self.dialogue.add_message("보스가 쏘는 노란색 무기는\n총알이 닿아도 없어지지 않아요", 100)
+        self.dialogue.add_message("E로 강한 공격을 해보세요", 100)
+        self.dialogue.add_message(
+            "오른쪽 위에 현재 학점과 체력이 표시돼요\n체력이 다 닳면 게임이 끝나요", 100)
+        self.dialogue.add_message("보스의 체력이 다 닳면 다음 스테이지로 넘어갑니다", 100)
+
     # callbacks ------------------------------------------------
+
+    def set_playing(self, is_playing):
+        '2가 들어오면 대화 종료'
+        if is_playing == 2:
+            self.end_dialogue = True
+            self.isplay = True
+            return
+        self.isplay = is_playing
 
     def summon_boss(self):
         img: pygame.Surface = StateManager.get_state('boss1', 'boss1_img')
         img_rect = img.get_rect()
         img_rect.top = 20
         img_rect.centerx = StateManager.get_state(
-            'stage2', 'entity_boundary').centerx
+            'stage1', 'entity_boundary').centerx
         self.boss = Boss1(
             pos=img_rect.topleft,
             img=StateManager.get_state('boss1', 'boss1_img'),
             speed=(0, 0),
             boundary_rect=StateManager.get_state(
-                'stage2', 'entity_boundary'),
+                'stage1', 'entity_boundary'),
             score=StateManager.get_state('boss1', 'boss1_score'),
-            health=StateManager.get_state('boss1', 'boss1_health'),
-            power=1,
-            typeid='stage2_boss1'
+            health=StateManager.get_state('boss1', 'boss1_health')//3,
+            power=1000000,
+            typeid='stage0_boss1'
         )
         self.boss.add_event_listener('delete', self.stage_clear)
 
         # 보스 무기
-        default_boss_weapon = DefaultStage2BossWeapon((40, 60))
+        default_boss_weapon = DefaultStage1BossWeapon((35, 50))
         default_boss_weapon.bind_boss(self.boss)
         self.boss.set_weapon(default_boss_weapon)
 
@@ -130,13 +162,6 @@ class AroundStage(Scene):
         self.enemies.clear_entities()
 
     # ------------------------------------------------ callbacks
-
-    def update_enemy_speed(self):
-        default_speed = StateManager.get_state('enemy', 'speed') // 3
-        for enemy in self.enemies.array:
-            direction = get_direction(enemy.pos, self.player.get_pos())
-            enemy.speed = [direction[0] * default_speed,
-                           direction[1] * default_speed]
 
     def move_player(self):
         '''
@@ -184,27 +209,17 @@ class AroundStage(Scene):
         '''
 
         # get config
-        BACKGROUND = StateManager.get_state('stage2', 'background')
-        TEXT_COLOR = StateManager.get_state('global', 'text_color')
-        ENTITY_BOUNDARY: pygame.Rect = StateManager.get_state(
-            'stage2', 'entity_boundary')
-        temp_screen = pygame.Surface(
-            (ENTITY_BOUNDARY.width, ENTITY_BOUNDARY.height))
-
-        camera_rect = self.get_camera_rect()
-
-        temp_screen.fill((255, 255, 255, 0))
-        pygame.draw.rect(temp_screen, (0, 0, 0), ENTITY_BOUNDARY, width=5)
-        self.player.draw(temp_screen)
-        for bullet in self.bullets.array:
-            bullet.draw(temp_screen)
-        for item in self.items.array:
-            item.draw(temp_screen)
-        for enemy in self.enemies.array:
-            enemy.draw(temp_screen)
+        BACKGROUND = StateManager.get_state('stage1', 'background')
 
         screen.blit(BACKGROUND, (0, 0))
-        screen.blit(temp_screen, (0, 0), camera_rect)
+        self.player.draw(screen)
+        for bullet in self.bullets.array:
+            bullet.draw(screen)
+        for item in self.items.array:
+            item.draw(screen)
+        for enemy in self.enemies.array:
+            enemy.draw(screen)
+
         topright = screen.get_rect().topright
 
         blit_item(screen, self.render_score_bar(),
@@ -219,6 +234,9 @@ class AroundStage(Scene):
             item=self.player.weapon.render_skill_info(),
             midbottom=info_pos
         )
+
+        if not self.isplay:
+            self.dialogue.draw(screen)
 
     def render_score_bar(self):
         bar_width, bar_height = 16, 100
@@ -243,17 +261,19 @@ class AroundStage(Scene):
 
         return result
 
-    def get_camera_rect(self):
-        camera_rect: pygame.Rect = StateManager.get_state(
-            'global', 'screen_rect').copy()
-        camera_rect.center = self.player.get_rect().center
-        return camera_rect
-
     def update(self):
         '''
         매 프레임마다 실행되어 게임을 업데이트 한다
         '''
+        if not self.end_dialogue and self.dialogue_timer.time <= 0:
+            self.isplay = False
 
+        if self.isplay:
+            self.game_update()
+        else:
+            self.dialogue.update()
+
+    def game_update(self):
         # 시간에 따른 점수 증가
         StateManager.add_score(1)
 
@@ -264,6 +284,7 @@ class AroundStage(Scene):
         # 엔티티 소환
         self.player.attack()
         self.item_summoner.summon()
+        self.enemy_summoner.summon()
         if self.boss:
             self.boss.attack()
 
@@ -273,7 +294,6 @@ class AroundStage(Scene):
         if self.boss:
             self.boss.update()
         self.move_player()  # 플레이어 이동
-        self.update_enemy_speed()
         self.move_entities()  # 엔티티 이동
         self.check_collide()  # 충돌 확인
 

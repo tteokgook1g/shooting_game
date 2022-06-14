@@ -36,7 +36,6 @@ class Enemy(Entity):
 
     def destroy(self):
         super().destroy()
-        StateManager.add_score(self.score)
 
     def attacked(self, attack_power: int):
         '''
@@ -45,4 +44,5 @@ class Enemy(Entity):
         self.health -= attack_power
         # 체력이 0이하이면 죽는다
         if self.health <= 0:
+            StateManager.add_score(self.score)
             self.destroy()

@@ -20,9 +20,16 @@ class FinishScene(Scene):
 
     def draw(self, screen: pygame.Surface):
         blit_item(screen, self.background, topleft=(0, 0))
+        center = StateManager.get_state('global', 'screen_rect').center
         blit_text(
             screen=screen,
-            msg=f'Score: {str(self.score).zfill(6)}',
+            msg=f'Score: {str(StateManager.get_score()).zfill(6)}',
             color=StateManager.get_state('global', 'text_color'),
-            center=StateManager.get_state('global', 'screen_rect').center
+            center=center
+        )
+        blit_text(
+            screen=screen,
+            msg=f"학점: {str(StateManager.get_state('player', 'grade'))}",
+            color=StateManager.get_state('global', 'text_color'),
+            center=(center[0], center[1]+50)
         )
