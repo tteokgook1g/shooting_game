@@ -45,6 +45,9 @@ class Entity(EventListener):
         return rect
 
     def get_pos(self) -> tuple[int, int]:
+        '''
+        현재 좌표를 return한다
+        '''
         return self.pos[:]
 
     def draw(self, screen: pygame.Surface):

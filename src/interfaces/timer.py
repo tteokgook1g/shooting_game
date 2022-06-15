@@ -62,6 +62,11 @@ class TimerManager():
         return cls._instance
 
     def __init__(self):
+        '''
+        timers | Timer를 저장한다
+        manual_timers | ManualTimer를 저장한다
+        frames_ranges | 랜덤으로 실행될 실행 간격을 결정하는 frames_range들을 저장한다
+        '''
         cls = type(self)
         if not hasattr(cls, "_init"):
             self.timers: dict[str, Timer] = {}
@@ -81,12 +86,18 @@ class TimerManager():
         self.frames_ranges[timer_name] = frames_range
 
     def get_timer(self, timer_name):
+        '''
+        timers에 timer를 추가한다
+        '''
         if timer_name in self.timers:
             return self.timers[timer_name]
         if timer_name in self.manual_timers:
             return self.manual_timers[timer_name]
 
     def remove_timer(self, timer_name):
+        '''
+        timers에서 timer를 제거한다
+        '''
         if timer_name in self.timers:
             self.timers.pop(timer_name)
         if timer_name in self.manual_timers:
@@ -97,6 +108,9 @@ class TimerManager():
         self.manual_timers[timer_name] = timer
 
     def clear_all_timers(self):
+        '''
+        모든 timer를 제거한다
+        '''
         self.timers.clear()
         self.manual_timers.clear()
         self.frames_ranges.clear()
@@ -105,14 +119,15 @@ class TimerManager():
         for timer_name in self.timers.copy():
             timer = self.timers[timer_name]
             if timer.update():  # 콜백이 실행되면
-                if self.frames_ranges[timer_name] is not None:  # 범위가 설정되어 있으면
+                # 범위가 설정되어 있으면 timer를 설정한다
+                if self.frames_ranges[timer_name] is not None:
                     timer.set_timeout(
                         random.randint(*self.frames_ranges[timer_name]),
                         timer.callback,
                         *timer.args,
                         **timer.kwargs
                     )
-                else:  # 범위가 설정되어 있지 않으면
+                else:  # 범위가 설정되어 있지 않으면 timers에서 제거한다
                     self.timers.pop(timer_name)
                     self.frames_ranges.pop(timer_name)
 

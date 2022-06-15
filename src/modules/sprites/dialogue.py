@@ -1,7 +1,7 @@
 '튜토리얼에 사용할 대화'
 
 import pygame
-
+import time
 from ...interfaces.timer import TimerManager
 from ...interfaces.utils import *
 

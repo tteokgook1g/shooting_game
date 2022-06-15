@@ -1,6 +1,7 @@
 '첫 번째 스테이지'
 
 import pygame
+import time
 
 from ...interfaces.entity_manager import EntityManagerFactory
 from ...interfaces.game_state import StateManager

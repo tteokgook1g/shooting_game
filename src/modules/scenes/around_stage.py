@@ -44,17 +44,18 @@ class AroundStage(Scene):
         self.grade = 0
 
     def start_scene(self):
+        # EntityManagerFactory에서 EntityManager를 불러온다
         self.player = Player()
         self.enemies = EntityManagerFactory.get_manager('enemy')
         self.bullets = EntityManagerFactory.get_manager('bullet')
         self.items = EntityManagerFactory.get_manager('item')
-
+        # 기본적인 state 설정
         self.next_level_score = StateManager.get_score()+self.level_interval
         StateManager.set_state('player', 'speed', 10)
         StateManager.set_state('enemy', 'speed', 5)
-
+        # 보스 소환
         self.summon_boss()
-
+        # player가 이동하는 boundary_rect 설정
         self.player.boundary_rect = StateManager.get_state(
             'stage2', 'entity_boundary')
         # 플레이어 무기
@@ -83,6 +84,9 @@ class AroundStage(Scene):
     # callbacks ------------------------------------------------
 
     def summon_boss(self):
+        '''
+        boss의 다양한 state를 설정하고, 보스를 소환한다
+        '''
         img: pygame.Surface = StateManager.get_state('boss1', 'boss1_img')
         img_rect = img.get_rect()
         img_rect.top = 20
@@ -110,14 +114,17 @@ class AroundStage(Scene):
         return True
 
     def game_over(self):
+        '플레이어의 체력이 0이 되었을 때 game_over event를 실행한다'
         self.end_stage()
         self.call_event('game_over')
 
     def stage_clear(self):
+        '스테이지를 클리어했을 때 stage_clear event를 실행한다'
         self.end_stage()
         self.call_event('stage_clear')
 
     def end_stage(self):
+        'current stage에서 사용하던 timer와 entities를 전부 제거한다'
         StateManager.set_state('player', 'health', self.player.health)
         StateManager.set_state('player', 'weapon', self.player.weapon)
         if self.grade == len(GRADE):
@@ -132,6 +139,7 @@ class AroundStage(Scene):
     # ------------------------------------------------ callbacks
 
     def update_enemy_speed(self):
+        'enemy의 속도를 업데이트한다'
         default_speed = StateManager.get_state('enemy', 'speed') // 3
         for enemy in self.enemies.array:
             direction = get_direction(enemy.pos, self.player.get_pos())
@@ -190,9 +198,9 @@ class AroundStage(Scene):
             'stage2', 'entity_boundary')
         temp_screen = pygame.Surface(
             (ENTITY_BOUNDARY.width, ENTITY_BOUNDARY.height))
-
+        # player의 좌표를 기준으로 하는 화면 설정
         camera_rect = self.get_camera_rect()
-
+        # screen에 entity들을 blit 한다
         temp_screen.fill((255, 255, 255, 0))
         pygame.draw.rect(temp_screen, (0, 0, 0), ENTITY_BOUNDARY, width=5)
         self.player.draw(temp_screen)
@@ -202,11 +210,11 @@ class AroundStage(Scene):
             item.draw(temp_screen)
         for enemy in self.enemies.array:
             enemy.draw(temp_screen)
-
+        # camera_rect의 화면은 blit 한다
         screen.blit(BACKGROUND, (0, 0))
         screen.blit(temp_screen, (0, 0), camera_rect)
         topright = screen.get_rect().topright
-
+        # 체력바, 점수창을 화면에 blit 한다
         blit_item(screen, self.render_score_bar(),
                   topright=(topright[0]-25, topright[1]+30))
         blit_item(screen, self.player.render_health_bar(),
@@ -221,6 +229,7 @@ class AroundStage(Scene):
         )
 
     def render_score_bar(self):
+        'score_bar에 grade를 blit 한다'
         bar_width, bar_height = 16, 100
         bar = pygame.Surface((bar_width, bar_height))
         bar.fill((255, 255, 255))
@@ -244,6 +253,7 @@ class AroundStage(Scene):
         return result
 
     def get_camera_rect(self):
+        'player의 좌표를 기준으로하는 rect를 반환한다'
         camera_rect: pygame.Rect = StateManager.get_state(
             'global', 'screen_rect').copy()
         camera_rect.center = self.player.get_rect().center

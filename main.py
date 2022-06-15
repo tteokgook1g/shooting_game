@@ -61,7 +61,7 @@ except FileNotFoundError as err:
     pygame.quit()
     exit(0)
 
-
+# 3.3 - 배경 색깔 지정
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
@@ -69,11 +69,11 @@ background = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 background.fill(WHITE)
 
 
-# 4 시간 변수
+# 4 - 시간 변수
 FPS = 30
 fpsClock = pygame.time.Clock()
 
-# 5 object config
+# 5 - object config
 state_manager = StateManager()
 
 global_state = GameState(
@@ -125,7 +125,7 @@ player_config = GameState(
     speed=5,
     weapon=None,
     boundary_rect=SCREEN_RECT,
-    score=0,
+    score=0,  # 플레이어 점수
     power=100,  # 플레이어 공격력
     gold=0,  # 상점에서 사용할 재화
     health=1000  # 플래이어 체력
@@ -140,8 +140,7 @@ state_manager.add_state('item', item_config)
 state_manager.add_state('boss1', boss_config)
 state_manager.add_state('player', player_config)
 
-
-# 6 scenes
+# 6 - scenes
 scene_manager = SceneManager()
 
 # opening_scene
@@ -197,8 +196,7 @@ scene_manager.add_scene('shop_scene', shop_scene)
 scene_manager.current_scene = opening_scene
 scene_manager.next_scene = opening_scene
 
-
-# 7 game loop
+# 7 - game loop
 while True:
     scene_manager.update()
 

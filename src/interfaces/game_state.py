@@ -32,23 +32,28 @@ class StateManager():
 
     @classmethod
     def get_state(cls, type: str, name: str):
+        'configs에 Gamestate를 추가한다'
         return cls.configs[type].get_state(name)
 
     @classmethod
     def set_state(cls, type: str, name: str, value):
+        'gamestate에 변수를 추가한다'
         cls.configs[type].set_state(name, value)
 
     @classmethod
     def add_state(cls, type: str, config: GameState):
+        'configs에 Gamestate를 추가한다'
         cls.configs[type] = config
 
     # 많이 참조하는 state 함수로 만든다
     @classmethod
     def get_score(cls):
+        'player의 score를 return'
         return cls.get_state('player', 'score')
 
     @classmethod
     def add_score(cls, adding_score):
+        'score에 점수를 추가한다'
         cls.set_state('player', 'score', cls.get_score()+adding_score)
 
     @classmethod
