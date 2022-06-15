@@ -35,8 +35,8 @@ try:
     note = pygame.image.load("./asset/img/note.png")
     note = pygame.transform.scale(note, (183//6, 205//6))
     asteroidimgs = (computer, book, note)
-    gameover_image = pygame.image.load("./asset/img/gameover.jpg")
-
+    gameover_image = pygame.image.load("./asset/img/opening_scene_gray.png")
+    gameover_image = pygame.transform.scale(gameover_image, (480, 640))
     pencil_img = pygame.image.load("./asset/img/color-pencil.png")
     bullet_img = pencil_img
     mouse_img = pygame.image.load("./asset/img/mouse.png")
