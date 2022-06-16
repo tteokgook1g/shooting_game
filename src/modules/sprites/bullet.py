@@ -1,4 +1,4 @@
-# 5.4 class Bullet
+# class Bullet
 
 
 from ...interfaces.entity import Entity

@@ -1,4 +1,4 @@
-# 5.3 class Enemy
+# class Enemy
 
 
 from ...interfaces.entity import Entity
@@ -35,6 +35,9 @@ class Enemy(Entity):
         player.add_health(-self.power)
 
     def destroy(self):
+        '''
+        entity 자기 자신을 삭제한다
+        '''
         super().destroy()
 
     def attacked(self, attack_power: int):

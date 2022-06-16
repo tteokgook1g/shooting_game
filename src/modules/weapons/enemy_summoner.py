@@ -60,7 +60,7 @@ class DefaultStage1EnemySummoner(EnemySummoner):
         screen_width = StateManager.get_state('global', 'screen_width')
         enemy_imgs = StateManager.get_state('enemy', 'imgs')
         enemyid = random.randint(0, len(enemy_imgs)-1)
-
+        # new_enemy 생성
         new_enemy = Enemy(
             pos=(random.randint(offset, screen_width-offset), 0),
             img=enemy_imgs[enemyid],
@@ -76,9 +76,11 @@ class DefaultStage1EnemySummoner(EnemySummoner):
         self.enemies.add_entity(new_enemy)
 
     def delete_enemy(self, enemy):
+        'enemy entitiy를 제거한다'
         self.enemies.remove_entity(enemy)
 
     def add_score(self, adding_score: int):
+        'enemy의 체력이 0이 될 때 score에 점수를 추가한다'
         StateManager.set_state(
             'global',
             'score',

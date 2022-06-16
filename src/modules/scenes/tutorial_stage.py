@@ -50,6 +50,9 @@ class TutorialStage(Scene):
         self.end_dialogue = False
 
     def start_scene(self):
+        '''
+        tutorial_scene를 시작한다
+        '''
         self.player = Player()
         self.enemies = EntityManagerFactory.get_manager('enemy')
         self.bullets = EntityManagerFactory.get_manager('bullet')
@@ -116,6 +119,9 @@ class TutorialStage(Scene):
         self.isplay = is_playing
 
     def summon_boss(self):
+        '''
+        boss entity를 추가한다
+        '''
         img: pygame.Surface = StateManager.get_state('boss1', 'boss1_img')
         img_rect = img.get_rect()
         img_rect.top = 20
@@ -143,14 +149,23 @@ class TutorialStage(Scene):
         return True
 
     def game_over(self):
+        '''
+        player의 체력이 0이 됐을 때 game_over event를 호출한다
+        '''
         self.end_stage()
         self.call_event('game_over')
 
     def stage_clear(self):
+        '''
+        스테이지가 끝났을 때 stage_clear event를 호출한다
+        '''
         self.end_stage()
         self.call_event('stage_clear')
 
     def end_stage(self):
+        '''
+        스테이지가 끝났을 때 모든 entity와 timer를 제거한다
+        '''
         StateManager.set_state('player', 'health', self.player.health)
         StateManager.set_state('player', 'weapon', self.player.weapon)
         if self.grade == len(GRADE):
@@ -222,7 +237,9 @@ class TutorialStage(Scene):
             enemy.draw(screen)
 
         topright = screen.get_rect().topright
-
+        '''
+        score_bar와 health_bar를 화면에 blit한다
+        '''
         blit_item(screen, self.render_score_bar(),
                   topright=(topright[0]-25, topright[1]+30))
         blit_item(screen, self.player.render_health_bar(),
@@ -240,6 +257,9 @@ class TutorialStage(Scene):
             self.dialogue.draw(screen)
 
     def render_score_bar(self):
+        '''
+        score_bar를 result에 blit 한다
+        '''
         bar_width, bar_height = 16, 100
         bar = pygame.Surface((bar_width, bar_height))
         bar.fill((255, 255, 255))
@@ -303,6 +323,9 @@ class TutorialStage(Scene):
         self.items.update()
 
     def when_level_up(self):
+        '''
+        레벨업 했을 때 학점을 올린다
+        '''
         self.grade += 1
         if self.grade > len(GRADE):
             self.grade = len(GRADE)

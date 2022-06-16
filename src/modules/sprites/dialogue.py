@@ -14,11 +14,17 @@ class Dialogue():
         self.toggle_playing = func_toggle_playing
 
     def add_message(self, msg: str, time_interval: int):
+        '''
+        msg에 출력할 메세지와 언제 출력될 것인지를 추가한다
+        '''
         self.msg.append((msg, time_interval))
         if time_interval > 0:
             self.play_idx.append(len(self.msg)-1)
 
     def update(self):
+        '''
+        msg의 curr_idx에 있는 메세지에 timer를 추가한다
+        '''
         if pygame.event.peek(pygame.KEYDOWN):
             if self.curr_idx in self.play_idx:
                 self.play_idx.remove(self.curr_idx)
@@ -32,6 +38,9 @@ class Dialogue():
                 TimerManager().remove_timer('stage0_dialogue_timer')
 
     def draw(self, screen: pygame.Surface):
+        '''
+        msg의 curr_idx에 있는 메세지를 화면에 띄운다
+        '''
         gap_height = 5
         font_size = 20
         sentences = self.msg[self.curr_idx][0].split('\n')

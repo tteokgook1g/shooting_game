@@ -28,10 +28,16 @@ class PlayerWeapon():
         self.info_img = None  # 상점 이미지
 
     def level_up(self):
+        '''
+        level_up시 공격력을 증가시킨다
+        '''
         self.power = self.next_power
         self.cost *= 1.1
 
     def purchase_level_up(self):
+        '''
+        상점에서 level_up을 구매한다
+        '''
         if StateManager.get_gold() >= self.cost:
             StateManager.add_gold(-self.cost)
             self.level_up()
@@ -43,12 +49,19 @@ class PlayerWeapon():
         pass
 
     def bind_player(self, player):
+        '''
+        playerweapon 에 대응되는 player를 bind 한다
+        '''
         self.player = player
 
     def _render_skill_info_list(self):
         return []
 
     def render_skill_info(self):
+        '''
+        스킬의 리스트를 반환한다
+        이 함수에서 _render_skill_info_list는 부모 클래스의 함수를 불러온다
+        '''
         gap_width = 10
         infos: list[pygame.Surface] = self._render_skill_info_list()
         screen_width = sum(map(lambda x: x.get_rect().width,
@@ -68,6 +81,9 @@ class PlayerWeapon():
         return result
 
     def render_shop_info(self):
+        '''
+        shop_info를 반환한다
+        '''
         gap_width = 10
         infos: list[pygame.Surface] = self._render_shop_info_list()
         screen_width = sum(map(lambda x: x.get_rect().width,
@@ -91,19 +107,35 @@ class WeaponDecorator(PlayerWeapon):
     'interface WeaponDecorator'
 
     def __init__(self, weapon: PlayerWeapon) -> None:
+        '''
+        weapon: PlayerWeapon | shotgun
+        _weapon: PlayerWeapon | defaultweapon
+        '''
         super().__init__()
         self._weapon = weapon
 
     def attack(self):
+        '''
+        기본 weapon의 공격을 수행한다
+        '''
         self._weapon.attack()
 
     def level_up(self):
+        '''
+        level_up 시 호출된다
+        '''
         super().level_up()
 
     def purchase_level_up(self):
+        '''
+        상점에서 level_up을 수행한다
+        '''
         super().purchase_level_up()
 
     def bind_player(self, player):
+        '''
+        shotgun 과 defaultweapon과 player를 bind 해준다
+        '''
         super().bind_player(player)
         self._weapon.bind_player(player)
 
@@ -111,6 +143,9 @@ class WeaponDecorator(PlayerWeapon):
         return self._weapon._render_shop_info_list()
 
     def _render_skill_info_list(self):
+        '''
+        defaultweapon의 skill_info_list를 호출한다
+        '''
         return self._weapon._render_skill_info_list()
 
 
@@ -137,6 +172,9 @@ class DefaultPlayerWeapon(PlayerWeapon):
             StateManager.get_state('bullet', 'bullet_img'), (80, 80))
 
     def level_up(self):
+        '''
+        레벨업시 이 함수 호출
+        '''
         super().level_up()
         self.next_power *= 1.1
 
@@ -193,9 +231,16 @@ class DefaultPlayerWeapon(PlayerWeapon):
         self.bullets.add_entity(new_bullet)
 
     def delete_bullet(self, bullet):
+        '''
+        bullet을 삭제한다
+        '''
         self.bullets.remove_entity(bullet)
 
     def _render_skill_info_list(self):
+        '''
+        skill_info_list를 반환한다
+        부모 클래스에서 _render_shop_info_list 함수를 불러온다
+        '''
         bullet_img: pygame.Surface = StateManager.get_state(
             'bullet', 'bullet_img')
         bullet_img = pygame.transform.scale(bullet_img, (50, 50))
@@ -216,6 +261,7 @@ class DefaultPlayerWeapon(PlayerWeapon):
 
 
 class ShotgunDecorator(WeaponDecorator):
+
     def __init__(self, weapon: PlayerWeapon, cooltime: int):
         super().__init__(weapon)
 
@@ -235,6 +281,9 @@ class ShotgunDecorator(WeaponDecorator):
             StateManager.get_state('bullet', 'shotgun_img'), (80, 80))
 
     def level_up(self):
+        '''
+        레벨업시 함수 호출
+        '''
         super().level_up()
         self.next_power *= 1.1
 
@@ -253,6 +302,10 @@ class ShotgunDecorator(WeaponDecorator):
         return other
 
     def attack(self):
+        '''
+        shotgun의 attack을 실행하고,
+        suepr().attack에서 default_weapon의 attack을 실행한다
+        '''
         super().attack()
         if self.timer.time <= 0 and pygame.key.get_pressed()[pygame.K_e]:
             self.make_shotgun()
@@ -300,6 +353,9 @@ class ShotgunDecorator(WeaponDecorator):
             self.bullets.add_entity(new_bullet)
 
     def delete_bullet(self, bullet):
+        '''
+        bullet을 제거한다
+        '''
         self.bullets.remove_entity(bullet)
 
     def _render_skill_info_list(self):

@@ -45,6 +45,7 @@ class DefaultStage1ItemSummoner(ItemSummoner):
     def summon(self):
         '''
         새로운 아이템을 생성한다
+        cooltime_range에서 랜덤하게 item을 만든다
         '''
 
         if self.timer.time <= 0:
@@ -57,7 +58,7 @@ class DefaultStage1ItemSummoner(ItemSummoner):
         offset = StateManager.get_state('item', 'item_offset_width')
         screen_width = StateManager.get_state('global', 'screen_width')
         item_imgs = StateManager.get_state('item', 'imgs')
-
+        # new_item 생성
         new_item = Item(
             pos=(random.randint(offset, screen_width-offset), 0),
             img=item_imgs[random.randint(0, len(item_imgs)-1)],
@@ -70,6 +71,9 @@ class DefaultStage1ItemSummoner(ItemSummoner):
         self.items.add_entity(new_item)
 
     def delete_item(self, item):
+        '''
+        item entity를 제거한다
+        '''
         self.items.remove_entity(item)
 
 
@@ -89,6 +93,7 @@ class DefaultStage2ItemSummoner(ItemSummoner):
     def summon(self):
         '''
         새로운 아이템을 생성한다
+        cooltime_range에서 랜덤하게 item을 생성한다
         '''
 
         if self.timer.time <= 0:
@@ -102,7 +107,7 @@ class DefaultStage2ItemSummoner(ItemSummoner):
         screen_width = StateManager.get_state(
             'stage2', 'entity_boundary').width
         item_imgs = StateManager.get_state('item', 'imgs')
-
+        # new_item 생성
         new_item = Item(
             pos=(random.randint(offset, screen_width-offset), 0),
             img=item_imgs[random.randint(0, len(item_imgs)-1)],
@@ -115,4 +120,7 @@ class DefaultStage2ItemSummoner(ItemSummoner):
         self.items.add_entity(new_item)
 
     def delete_item(self, item):
+        '''
+        item entity를 제거한다
+        '''
         self.items.remove_entity(item)

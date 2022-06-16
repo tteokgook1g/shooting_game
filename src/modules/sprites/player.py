@@ -1,6 +1,4 @@
-'''
-class Player
-'''
+# class Player
 
 import pygame
 from pygame import Vector2
@@ -13,7 +11,7 @@ from ...interfaces.utils import *
 
 class Player(EventListener):
     '''
-    죽을 때 EventListener.call_event('delete') 호출
+    player의 체력이 0이 되었을 때 EventListener.call_event('delete') 호출
     '''
 
     def __init__(self):
@@ -43,6 +41,9 @@ class Player(EventListener):
         self.max_health = self.health
 
     def get_pos(self) -> tuple[int, int]:
+        '''
+        player의 좌표를 반환한다
+        '''
         return self.pos[:]
 
     def add_health(self, health):
@@ -55,6 +56,9 @@ class Player(EventListener):
             self.call_event('delete')
 
     def render_health_bar(self):
+        '''
+        화면에 player의 체력바를 표시한다
+        '''
         bar_width, bar_height = 16, 100
         bar = pygame.Surface((bar_width, bar_height+20))
         bar.fill((255, 255, 255))
@@ -120,9 +124,15 @@ class Player(EventListener):
         return rect
 
     def set_weapon(self, weapon: PlayerWeapon):
+        '''
+        player의 무기를 설정한다
+        '''
         self.weapon = weapon
 
     def attack(self):
+        '''
+        player가 적을 공격했을 때 적의 체력을 감소시킨다
+        '''
         self.weapon.attack()
 
     def draw(self, screen: pygame.Surface):

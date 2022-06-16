@@ -16,9 +16,15 @@ class FinishScene(Scene):
         self.background = background
 
     def update(self):
+        '''
+        score변수를 player의 score로 변환한다
+        '''
         self.score = StateManager.get_score()
 
     def draw(self, screen: pygame.Surface):
+        '''
+        game_over 화면에 score와 학점을 그린다
+        '''
         blit_item(screen, self.background, topleft=(0, 0))
         center = StateManager.get_state('global', 'screen_rect').center
         blit_text(

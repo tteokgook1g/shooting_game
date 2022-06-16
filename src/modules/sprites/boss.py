@@ -35,13 +35,19 @@ class Boss1(Enemy):
         self.entity = self
         self.max_health = self.health
         self.weapon = None
-        self.counter=10
-        self.direction=1
+        self.counter = 10
+        self.direction = 1
 
     def set_weapon(self, weapon: BossWeapon):
+        '''
+        boss의 weapon을 설정한다
+        '''
         self.weapon = weapon
 
     def attack(self):
+        '''
+        boss의 공격 entity를 생성한다
+        '''
         self.weapon.attack()
 
     def do_when_collide_with_player(self, player: Player):
@@ -51,24 +57,29 @@ class Boss1(Enemy):
         player.add_health(-self.power)
 
     def update(self):
+        '''
+        update할 때마다 boss의 속도를 랜덤하게 바꾸어준다
+        '''
         k = 2.5
         cx = self.get_rect().centerx
         screenx = StateManager.get_state('stage1', 'entity_boundary').centerx
-        if cx<=49:
-            self.speed[0]=2.5
-        if cx>=400:
-            self.speed[0]=-2.5
-        if self.counter==0:
-            self.speed[0]=k*(numpy.random.normal()+1)*self.direction
-            self.direction*=-1
-            self.counter=numpy.random.randint(10,20)
-        self.counter-=1
-        
+        if cx <= 49:
+            self.speed[0] = 2.5
+        if cx >= 400:
+            self.speed[0] = -2.5
+        if self.counter == 0:
+            self.speed[0] = k*(numpy.random.normal()+1)*self.direction
+            self.direction *= -1
+            self.counter = numpy.random.randint(10, 20)
+        self.counter -= 1
 
     def draw(self, screen: pygame.Surface):
+        '''
+        boss의 체럭 바를 boss entity 아래 blit 한다
+        '''
         super().draw(screen)
 
-        # 체력 바
+        # boss의 체력 바
         bar_width, bar_height = 50, 7
         bar = pygame.Surface((bar_width, bar_height))
         bar.fill((255, 0, 0))
@@ -81,5 +92,8 @@ class Boss1(Enemy):
         screen.blit(bar, bar_rect)
 
     def destroy(self):
+        '''
+        호출 시 boss entity를 삭제한다
+        '''
         super().destroy()
         self.call_event('delete')

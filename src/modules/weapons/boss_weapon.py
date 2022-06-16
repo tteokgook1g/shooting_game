@@ -22,6 +22,9 @@ class BossWeapon():
         pass
 
     def bind_boss(self, boss):
+        '''
+        self.boss을 입력받은 boss로 정한다
+        '''
         self.boss = boss
 
 
@@ -36,6 +39,9 @@ class BossWeaponDecorator(BossWeapon):
         self._weapon.attack()
 
     def bind_boss(self, boss):
+        '''
+        bossweapon을 가질 boss를 정한다
+        '''
         super().bind_boss(boss)
         self._weapon.bind_boss(boss)
 
@@ -62,6 +68,7 @@ class DefaultStage1BossWeapon(BossWeapon):
         img_rect = img.get_rect()
         img_rect.centerx = boss_rect.centerx
         img_rect.top = boss_rect.bottom
+        # new_spell(class Enemy) 생성
         new_spell = Enemy(
             pos=img_rect.topleft,
             img=img,
@@ -81,6 +88,9 @@ class DefaultStage1BossWeapon(BossWeapon):
         self.enemies.add_entity(new_spell)
 
     def delete_enemy(self, enemy):
+        '''
+        enemy entitiy를 제거한다
+        '''
         self.enemies.remove_entity(enemy)
 
 
@@ -111,7 +121,7 @@ class DefaultStage2BossWeapon(BossWeapon):
 
         delta_pos = Vector2((150, 0)).rotate(random.random()*360)
         boss_pos = Vector2(self.boss.get_rect().center)
-
+        # new_enemy(class Enemy) 생성
         new_enemy = Enemy(
             pos=(boss_pos+delta_pos)[:],
             img=enemy_imgs[enemyid],
@@ -127,9 +137,14 @@ class DefaultStage2BossWeapon(BossWeapon):
         self.enemies.add_entity(new_enemy)
 
     def delete_enemy(self, enemy):
+        '''
+        enemy entitiy를 제거한다
+        '''
         self.enemies.remove_entity(enemy)
 
     def add_score(self, adding_score: int):
+        '''
+        호출되었을 때 adding_score만큼 score를 추가한다'''
         StateManager.set_state(
             'global',
             'score',

@@ -1,6 +1,4 @@
-'''
-class Item
-'''
+# class Item
 
 from ...interfaces.entity import Entity
 from ...interfaces.entity_manager import EntityManagerFactory
@@ -27,10 +25,13 @@ class Item(Entity):
 
     def do_when_collide_with_player(self, player: Player):
         '''
-        자신을 삭제하고 플레이어의 체력을 차감한다
+        자신을 삭제하고 플레이어의 체력을 증가시킨다
         '''
         self.destroy()
         player.add_health(self.heal)
 
     def destroy(self):
+        '''
+        플레이어와 충돌했을 때 자신을 삭제한다
+        '''
         self.entity_manager.remove_entity(self)
