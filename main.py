@@ -13,6 +13,7 @@ from src.modules.scenes.finish_scene import FinishScene
 from src.modules.scenes.game_stage import GameStage
 from src.modules.scenes.open_scene import OpeningScene
 from src.modules.scenes.shop_scene import ShopScene
+from src.modules.scenes.tutorial_stage import TutorialStage
 from src.modules.weapons.player_weapon import *
 
 pygame.init()
@@ -36,13 +37,14 @@ try:
     asteroidimgs = (computer, book, note)
     gameover_image = pygame.image.load("./asset/img/gameover.jpg")
 
-    bullet_imgs = (pygame.image.load("./asset/img/bullet01.png"),)
+    pencil_img = pygame.image.load("./asset/img/color-pencil.png")
+    bullet_img = pencil_img
+    mouse_img = pygame.image.load("./asset/img/mouse.png")
+    shotgun_img = mouse_img
+
     start_image = (pygame.image.load("./asset/img/opening_scene.png"))
     start_image = pygame.transform.scale(
         start_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
-
-    bullet_img = pygame.image.load("./asset/img/bullet01.png")
-    shotgun_img = pygame.image.load("./asset/img/shotgun01.png")
 
     energy_drink_img = pygame.image.load("./asset/img/energy-drink.png")
     energy_drink_img = pygame.transform.scale(
@@ -97,7 +99,7 @@ enemy_config = GameState(
     imgs=asteroidimgs,  # 이미지들
     speed=10,  # 초기 속도
     enemy_offset_width=5,  # 적이 좌우 벽에서 떨어진 정도
-    score=20,  # 적을 죽이면 얻는 점수
+    score=50,  # 적을 죽이면 얻는 점수
     health=100,  # 적의 체력
     power=50  # 적에게 맞으면 닳는 체력
 )
@@ -119,8 +121,7 @@ boss_config = GameState(
     boss1_img=boss1_img,
     boss1_health=3000,
     boss1_score=2000,
-    boss1_summon_delay=50,
-    boss1_speed=20
+    boss1_summon_delay=50
 )
 player_config = GameState(
     pos=(SCREEN_WIDTH//2, SCREEN_HEIGHT*3//4),
@@ -153,12 +154,22 @@ opening_scene = OpeningScene(
 )
 
 opening_scene.add_event_listener(
-    'start_game', scene_manager.goto_scene, 'stage1')
+    'start_game', scene_manager.goto_scene, 'tutorial_stage')
 scene_manager.add_scene('start_scene', opening_scene)
+
+# tutorial_stage
+tutorial_stage = TutorialStage(
+    level_interval=400,
+)
+tutorial_stage.add_event_listener(
+    'game_over', scene_manager.goto_scene, 'finish_scene')
+tutorial_stage.add_event_listener(
+    'stage_clear', scene_manager.goto_scene, 'stage1')
+scene_manager.add_scene('tutorial_stage', tutorial_stage)
 
 # stage1
 stage1 = GameStage(
-    level_interval=200,
+    level_interval=400,
 )
 stage1.add_event_listener(
     'game_over', scene_manager.goto_scene, 'finish_scene')
@@ -168,7 +179,7 @@ scene_manager.add_scene('stage1', stage1)
 
 # stage2
 stage2 = AroundStage(
-    level_interval=200,
+    level_interval=400,
 )
 stage2.add_event_listener(
     'game_over', scene_manager.goto_scene, 'finish_scene')
@@ -190,10 +201,6 @@ scene_manager.add_scene('shop_scene', shop_scene)
 # start with opening_scene
 scene_manager.current_scene = opening_scene
 scene_manager.next_scene = opening_scene
-
-# StateManager.add_gold(10000)
-# scene_manager.current_scene = shop_scene
-# scene_manager.next_scene = shop_scene
 
 
 # 7 game loop

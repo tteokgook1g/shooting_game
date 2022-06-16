@@ -13,12 +13,12 @@ def get_direction(src: tuple[float, float], dst: tuple[float, float]) -> tuple[f
     return ((dst[0]-src[0])/d, (dst[1]-src[1])/d)
 
 
-def render_text(msg: str, color: tuple[int, int, int], font_size=20) -> pygame.Surface:
+def render_text(msg: str, color: tuple[int, int, int], font_size=20, bg_color=None) -> pygame.Surface:
     '''
     문자열 msg를 color 색깔로 render해서 return한다
     '''
     font = pygame.font.Font('asset\GmarketSansTTFMedium.ttf', font_size)
-    return font.render(msg, True, color)
+    return font.render(msg, True, color, bg_color)
 
 
 def blit_item(screen: pygame.Surface, item: pygame.Surface, **kwargs):
@@ -41,3 +41,7 @@ def blit_text(screen: pygame.Surface, msg: str, color: tuple[int, int, int] = (0
     '''
     text: pygame.Surface = render_text(msg, color, font_size)
     blit_item(screen, text, **kwargs)
+
+
+GRADE = {0: 'F', 1: 'D-', 2: 'D0', 3: 'D+', 4: 'C-', 5: 'C0',
+         6: 'C+', 7: 'B-', 8: 'B0', 9: 'B+', 10: 'A-', 11: 'A0', 12: 'A+'}

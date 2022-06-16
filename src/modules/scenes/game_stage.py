@@ -14,9 +14,6 @@ from ..weapons.enemy_summoner import *
 from ..weapons.item_summoner import *
 from ..weapons.player_weapon import *
 
-GRADE = {0: 'F', 1: 'D-', 2: 'D0', 3: 'D+', 4: 'C-', 5: 'C0',
-         6: 'C+', 7: 'B-', 8: 'B0', 9: 'B+', 10: 'A-', 11: 'A0', 12: 'A+'}
-
 
 class GameStage(Scene):
     '''
@@ -53,10 +50,12 @@ class GameStage(Scene):
         self.bullets = EntityManagerFactory.get_manager('bullet')
         self.items = EntityManagerFactory.get_manager('item')
 
+        self.next_level_score = StateManager.get_score()+self.level_interval
+
         # 플레이어 무기
         default_weapon = DefaultPlayerWeapon(
             cooltime=10)
-        player_weapon = ShotgunDecorator(default_weapon, 30)
+        player_weapon = ShotgunDecorator(default_weapon, 100)
         player_weapon.bind_player(self.player)
         self.player.set_weapon(player_weapon)
 
@@ -100,7 +99,7 @@ class GameStage(Scene):
                 'stage1', 'entity_boundary'),
             score=StateManager.get_state('boss1', 'boss1_score'),
             health=StateManager.get_state('boss1', 'boss1_health'),
-            power=1000000,
+            power=1000,
             typeid='stage1_boss1'
         )
         self.boss.add_event_listener('delete', self.stage_clear)
@@ -124,6 +123,10 @@ class GameStage(Scene):
     def end_stage(self):
         StateManager.set_state('player', 'health', self.player.health)
         StateManager.set_state('player', 'weapon', self.player.weapon)
+        if self.grade == len(GRADE):
+            StateManager.set_state('player', 'grade', GRADE[-1])
+        else:
+            StateManager.set_state('player', 'grade', GRADE[self.grade])
         self.timer_manager.clear_all_timers()
         self.items.clear_entities()
         self.bullets.clear_entities()
@@ -190,12 +193,7 @@ class GameStage(Scene):
             enemy.draw(screen)
 
         topright = screen.get_rect().topright
-        # blit_text(
-        #     screen=screen,
-        #     msg=f'Score: {str(StateManager.get_score()).zfill(6)}',
-        #     color=TEXT_COLOR,
-        #     topright=topright
-        # )
+
         blit_item(screen, self.render_score_bar(),
                   topright=(topright[0]-25, topright[1]+30))
         blit_item(screen, self.player.render_health_bar(),
