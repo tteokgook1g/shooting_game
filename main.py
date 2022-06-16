@@ -41,7 +41,7 @@ try:
     bullet_img = pencil_img
     mouse_img = pygame.image.load("./asset/img/mouse.png")
     shotgun_img = mouse_img
-
+    settings_img = pygame.image.load("./asset/img/settings_image.png")
     start_image = (pygame.image.load("./asset/img/opening_scene.png"))
     start_image = pygame.transform.scale(
         start_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -115,8 +115,8 @@ boss_config = GameState(
     spell_speed=10,  # 보스의 속도
     spell_power=10,  # 보스 공격력
     boss1_img=boss1_img,  # 보스 이미지
-    boss1_health=3000,  # 보스 체력
-    boss1_score=2000,  # 보스 처치시 점수
+    boss1_health=4000,  # 보스 체력
+    boss1_score=2400,  # 보스 처치시 점수
     boss1_summon_delay=50  # 스테이지 시작을 기준으로 보스 발생까지 걸리는 프레임 수
 )
 player_config = GameState(
@@ -128,7 +128,7 @@ player_config = GameState(
     score=0,  # 플레이어 점수
     power=100,  # 플레이어 공격력
     gold=0,  # 상점에서 사용할 재화
-    health=1000  # 플래이어 체력
+    health=600  # 플래이어 체력
 )
 # state_manager에 global_state와 configs 추가
 state_manager.add_state('global', global_state)
@@ -145,7 +145,8 @@ scene_manager = SceneManager()
 
 # opening_scene
 opening_scene = OpeningScene(
-    background=start_image
+    background=start_image,
+    settings_image=settings_img
 )
 opening_scene.add_event_listener(
     'start_game', scene_manager.goto_scene, 'tutorial_stage')
@@ -153,7 +154,7 @@ scene_manager.add_scene('start_scene', opening_scene)
 
 # tutorial_stage
 tutorial_stage = TutorialStage(
-    level_interval=400,
+    level_interval=200,
 )
 tutorial_stage.add_event_listener(
     'game_over', scene_manager.goto_scene, 'finish_scene')
@@ -163,7 +164,7 @@ scene_manager.add_scene('tutorial_stage', tutorial_stage)
 
 # stage1
 stage1 = GameStage(
-    level_interval=400,
+    level_interval=200,
 )
 stage1.add_event_listener(
     'game_over', scene_manager.goto_scene, 'finish_scene')
@@ -173,7 +174,7 @@ scene_manager.add_scene('stage1', stage1)
 
 # stage2
 stage2 = AroundStage(
-    level_interval=400,
+    level_interval=200,
 )
 stage2.add_event_listener(
     'game_over', scene_manager.goto_scene, 'finish_scene')
@@ -199,7 +200,6 @@ scene_manager.next_scene = opening_scene
 # 7 - game loop
 while True:
     scene_manager.update()
-
     SCREEN.fill((255, 255, 255))
     scene_manager.draw(SCREEN)
 

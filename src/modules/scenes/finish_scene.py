@@ -39,3 +39,17 @@ class FinishScene(Scene):
             color=StateManager.get_state('global', 'text_color'),
             center=(center[0], center[1]+50)
         )
+        if str(StateManager.get_state('player', 'grade'))[0] == 'C' or str(StateManager.get_state('player', 'grade'))[0] == 'D' or str(StateManager.get_state('player', 'grade'))[0] == 'F':
+            blit_text(
+                screen=screen,
+                msg=f"조금 더 분발하세요...",
+                color=StateManager.get_state('global', 'text_color'),
+                center=(center[0], center[1]-50)
+            )
+        else:
+            blit_text(
+                screen=screen,
+                msg=f"훌륭해요!",
+                color=StateManager.get_state('global', 'text_color'),
+                center=(center[0], center[1]-50)
+            )

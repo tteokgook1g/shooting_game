@@ -37,7 +37,7 @@ class StateManager():
 
     @classmethod
     def set_state(cls, type: str, name: str, value):
-        'gamestate에 변수를 추가한다'
+        'gamestate의 config 값을 정한다'
         cls.configs[type].set_state(name, value)
 
     @classmethod
