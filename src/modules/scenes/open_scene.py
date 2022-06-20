@@ -23,10 +23,16 @@ class OpeningScene(Scene):
         self.center = (StateManager.get_state('global', 'screen_rect').center[0], StateManager.get_state(
             'global', 'screen_rect').center[1])
 
+    def start_scene(self):
+        # 음악을 불러와서 재생한다
+        self.bgm = StateManager.get_state('global', 'opening_bgm')
+        self.bgm.play(-1)
+
     def start_game(self):
         '''
         start_game event를 실행한다
         '''
+        self.bgm.stop()  # 음악을 멈춘다
         self.call_event('start_game')
 
     def update(self):
@@ -54,7 +60,7 @@ class OpeningScene(Scene):
             )
             blit_text(
                 screen=screen,
-                msg="4.3을 위하여",
+                msg="4.3을 향하여",
                 color=StateManager.get_state('global', 'text_color'),
                 center=(self.center[0], self.center[1]-200)
             )
