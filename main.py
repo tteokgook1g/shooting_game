@@ -76,7 +76,8 @@ BLACK = (0, 0, 0)
 
 background = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 background.fill(WHITE)
-
+background2 = pygame.image.load("./asset/img/labimage.jpg")
+background2 = pygame.transform.scale(background2, (480, 640))
 
 # 4 - 시간 변수
 FPS = 30
