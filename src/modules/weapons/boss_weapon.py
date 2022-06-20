@@ -105,7 +105,7 @@ class DefaultStage2BossWeapon(BossWeapon):
         self.cooltime_range = cooltime_range
 
     def attack(self):
-        '새로운 마법을 생성한다'
+        '새로운 적을 생성한다'
         if self.timer.time <= 0:
             self.make_enemy()
             self.timer.time = random.randint(*self.cooltime_range)

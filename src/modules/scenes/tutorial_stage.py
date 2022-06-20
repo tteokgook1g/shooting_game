@@ -53,6 +53,11 @@ class TutorialStage(Scene):
         '''
         tutorial_scene를 시작한다
         '''
+
+        # 음악을 불러와서 재생한다
+        self.bgm = StateManager.get_state('global', 'tutorial_bgm')
+        self.bgm.play(-1)
+
         self.player = Player()
         self.enemies = EntityManagerFactory.get_manager('enemy')
         self.bullets = EntityManagerFactory.get_manager('bullet')
@@ -166,6 +171,8 @@ class TutorialStage(Scene):
         '''
         스테이지가 끝났을 때 모든 entity와 timer를 제거한다
         '''
+        self.bgm.stop()  # 음악을 멈춘다
+
         StateManager.set_state('player', 'health', self.player.health)
         StateManager.set_state('player', 'weapon', self.player.weapon)
         if self.grade == len(GRADE):

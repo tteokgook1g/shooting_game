@@ -56,6 +56,15 @@ try:
     boss1_img = pygame.transform.scale(boss1_img, (192//2, 250//2))
 
     # 3.2 - 효과음 삽입
+    tutorial_bgm = pygame.mixer.Sound('./asset/audio/tutorial_bgm.mp3')
+    stage1_bgm = pygame.mixer.Sound('./asset/audio/stage1_bgm.mp3')
+    stage2_bgm = pygame.mixer.Sound('./asset/audio/stage2_bgm.mp3')
+    opening_bgm = pygame.mixer.Sound('./asset/audio/opening_bgm.mp3')
+    default_bullet_sound = pygame.mixer.Sound(
+        './asset/audio/bullet_soundeffect.wav')
+    shotgun_sound = pygame.mixer.Sound(
+        './asset/audio/shotgun_soundeffect.wav')
+
 except FileNotFoundError as err:
     print('그림 또는 효과음 삽입에 문제가 있습니다.: ', err)
     pygame.quit()
@@ -82,7 +91,11 @@ global_state = GameState(
     screen_height=640,
     text_color=BLACK,
     fps=FPS,
-    screen_rect=SCREEN_RECT
+    screen_rect=SCREEN_RECT,
+    tutorial_bgm=tutorial_bgm,
+    stage1_bgm=stage1_bgm,
+    stage2_bgm=stage2_bgm,
+    opening_bgm=opening_bgm
 )
 stage1_config = GameState(
     background=background,
@@ -104,6 +117,8 @@ bullet_config = GameState(
     bullet_img=bullet_img,  # 총알 이미지
     shotgun_img=shotgun_img,  # 샷건 이미지
     speed=10,  # 초기 속도
+    default_bullet_sound=default_bullet_sound,  # 기본 총알 발사 효과음
+    shotgun_sound=shotgun_sound  # 샷건 발사 효과음
 )
 item_config = GameState(
     imgs=item_imgs,  # 이미지들
@@ -195,7 +210,6 @@ shop_scene = ShopScene(background=background)
 scene_manager.add_scene('shop_scene', shop_scene)
 
 # start with opening_scene
-scene_manager.current_scene = opening_scene
 scene_manager.next_scene = opening_scene
 
 # 7 - game loop

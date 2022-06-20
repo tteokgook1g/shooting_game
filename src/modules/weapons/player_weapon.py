@@ -170,6 +170,7 @@ class DefaultPlayerWeapon(PlayerWeapon):
         self.cost = 100
         self.info_img = pygame.transform.scale(
             StateManager.get_state('bullet', 'bullet_img'), (80, 80))
+        self.sound = StateManager.get_state('bullet', 'default_bullet_sound')
 
     def level_up(self):
         '''
@@ -197,6 +198,7 @@ class DefaultPlayerWeapon(PlayerWeapon):
         새로운 총알을 생성한다
         '''
         if self.timer.time <= 0 and pygame.key.get_pressed()[pygame.K_SPACE]:
+            self.sound.play()
             self.make_bullet()
             self.timer.time = self.cooltime
 
@@ -279,6 +281,7 @@ class ShotgunDecorator(WeaponDecorator):
         self.cost = 150
         self.info_img = pygame.transform.scale(
             StateManager.get_state('bullet', 'shotgun_img'), (80, 80))
+        self.sound = StateManager.get_state('bullet', 'shotgun_sound')
 
     def level_up(self):
         '''
@@ -304,11 +307,12 @@ class ShotgunDecorator(WeaponDecorator):
     def attack(self):
         '''
         shotgun의 attack을 실행하고,
-        suepr().attack에서 default_weapon의 attack을 실행한다
+        super().attack에서 default_weapon의 attack을 실행한다
         '''
         super().attack()
         if self.timer.time <= 0 and pygame.key.get_pressed()[pygame.K_e]:
             self.make_shotgun()
+            self.sound.play()
             self.timer.time = self.cooltime
 
     def make_shotgun(self):

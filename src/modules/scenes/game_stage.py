@@ -48,6 +48,11 @@ class GameStage(Scene):
         '''
         current_scene을 시작한다
         '''
+
+        # 음악을 불러와서 재생한다
+        self.bgm = StateManager.get_state('global', 'stage1_bgm')
+        self.bgm.play(-1)
+
         self.player = Player()
         self.enemies = EntityManagerFactory.get_manager('enemy')
         self.bullets = EntityManagerFactory.get_manager('bullet')
@@ -136,10 +141,12 @@ class GameStage(Scene):
         '''
         다음 스테이지로 넘어갈 때 모든 entity와 timer를 제거한다
         '''
+
+        self.bgm.stop() # 음악을 멈춘다
         StateManager.set_state('player', 'health', self.player.health)
         StateManager.set_state('player', 'weapon', self.player.weapon)
         if self.grade == len(GRADE):
-            StateManager.set_state('player', 'grade', GRADE[-1])
+            StateManager.set_state('player', 'grade', GRADE[len(GRADE)-1])
         else:
             StateManager.set_state('player', 'grade', GRADE[self.grade])
         self.timer_manager.clear_all_timers()

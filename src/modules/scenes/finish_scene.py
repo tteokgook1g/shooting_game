@@ -15,6 +15,11 @@ class FinishScene(Scene):
         self.score = score
         self.background = background
 
+    def start_scene(self):
+        # 음악을 불러와서 재생한다
+        self.bgm = StateManager.get_state('global', 'opening_bgm')
+        self.bgm.play(-1)
+
     def update(self):
         '''
         score변수를 player의 score로 변환한다

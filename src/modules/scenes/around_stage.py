@@ -44,6 +44,10 @@ class AroundStage(Scene):
         self.grade = 0
 
     def start_scene(self):
+        # 음악을 불러와서 재생한다
+        self.bgm = StateManager.get_state('global', 'stage2_bgm')
+        self.bgm.play(-1)
+
         # EntityManagerFactory에서 EntityManager를 불러온다
         self.player = Player()
         self.enemies = EntityManagerFactory.get_manager('enemy')
@@ -125,6 +129,8 @@ class AroundStage(Scene):
 
     def end_stage(self):
         'current stage에서 사용하던 timer와 entities를 전부 제거한다'
+        self.bgm.stop()  # 음악을 멈춘다
+
         StateManager.set_state('player', 'health', self.player.health)
         StateManager.set_state('player', 'weapon', self.player.weapon)
         if self.grade == len(GRADE):
