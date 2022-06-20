@@ -21,29 +21,6 @@ class PlayerWeapon():
         self.COLOR_DEACTIVATED = pygame.color.Color(150, 150, 150, 100)
 
         self.power = 0.0  # 현재 공격력
-        self.next_power = 0.0  # 다음 공격력
-        self.cost = 0  # 레벨업 가격
-        self.name = ''  # 스킬 이름
-        self.description = ''  # 스킬 설명
-        self.info_img = None  # 상점 이미지
-
-    def level_up(self):
-        '''
-        level_up시 공격력을 증가시킨다
-        '''
-        self.power = self.next_power
-        self.cost *= 1.1
-
-    def purchase_level_up(self):
-        '''
-        상점에서 level_up을 구매한다
-        '''
-        if StateManager.get_gold() >= self.cost:
-            StateManager.add_gold(-self.cost)
-            self.level_up()
-
-    def _render_shop_info_list(self):
-        return []
 
     def attack(self):
         pass
@@ -80,28 +57,6 @@ class PlayerWeapon():
 
         return result
 
-    def render_shop_info(self):
-        '''
-        shop_info를 반환한다
-        '''
-        gap_width = 10
-        infos: list[pygame.Surface] = self._render_shop_info_list()
-        screen_width = sum(map(lambda x: x.get_rect().width,
-                           infos))+gap_width*(len(infos)-1)
-        screen_height = max(
-            map(lambda x: x.get_rect().height, infos))
-
-        result = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
-        result.fill((255, 255, 255))
-
-        curr_point = Vector2(0, 0)
-
-        for info in infos:
-            result.blit(info, curr_point[:])
-            curr_point.x += gap_width+info.get_rect().width
-
-        return result
-
 
 class WeaponDecorator(PlayerWeapon):
     'interface WeaponDecorator'
@@ -120,27 +75,12 @@ class WeaponDecorator(PlayerWeapon):
         '''
         self._weapon.attack()
 
-    def level_up(self):
-        '''
-        level_up 시 호출된다
-        '''
-        super().level_up()
-
-    def purchase_level_up(self):
-        '''
-        상점에서 level_up을 수행한다
-        '''
-        super().purchase_level_up()
-
     def bind_player(self, player):
         '''
         shotgun 과 defaultweapon과 player를 bind 해준다
         '''
         super().bind_player(player)
         self._weapon.bind_player(player)
-
-    def _render_shop_info_list(self):
-        return self._weapon._render_shop_info_list()
 
     def _render_skill_info_list(self):
         '''
@@ -163,35 +103,8 @@ class DefaultPlayerWeapon(PlayerWeapon):
 
         self.cooltime = cooltime
 
-        self.name = '기본공격'
-        self.description = 'Space로 공격'
         self.power = 100.0
-        self.next_power = 110.0
-        self.cost = 100
-        self.info_img = pygame.transform.scale(
-            StateManager.get_state('bullet', 'bullet_img'), (80, 80))
         self.sound = StateManager.get_state('bullet', 'default_bullet_sound')
-
-    def level_up(self):
-        '''
-        레벨업시 이 함수 호출
-        '''
-        super().level_up()
-        self.next_power *= 1.1
-
-    def _render_shop_info_list(self):
-        result = pygame.Surface((100, 110))
-        rect = result.get_rect()
-        result.fill((255, 255, 255))
-        blit_item(result, self.info_img, midtop=rect.midtop)
-        blit_text(result, f'{int(self.power)} → {int(self.next_power)}', font_size=16,
-                  midbottom=rect.midbottom)
-        pygame.draw.rect(result, (0, 0, 0), result.get_rect(), 2)
-
-        other = super()._render_shop_info_list()
-        other.append(result)
-
-        return other
 
     def attack(self):
         '''
@@ -274,35 +187,8 @@ class ShotgunDecorator(WeaponDecorator):
 
         self.cooltime = cooltime
 
-        self.name = '샷건공격'
-        self.description = 'E로 공격'
         self.power = 100.0
-        self.next_power = 110.0
-        self.cost = 150
-        self.info_img = pygame.transform.scale(
-            StateManager.get_state('bullet', 'shotgun_img'), (80, 80))
         self.sound = StateManager.get_state('bullet', 'shotgun_sound')
-
-    def level_up(self):
-        '''
-        레벨업시 함수 호출
-        '''
-        super().level_up()
-        self.next_power *= 1.1
-
-    def _render_shop_info_list(self):
-        result = pygame.Surface((100, 110))
-        rect = result.get_rect()
-        result.fill((255, 255, 255))
-        blit_item(result, self.info_img, midtop=rect.midtop)
-        blit_text(result, f'{int(self.power)} → {int(self.next_power)}', font_size=16,
-                  midbottom=rect.midbottom)
-        pygame.draw.rect(result, (0, 0, 0), result.get_rect(), 2)
-
-        other = super()._render_shop_info_list()
-        other.append(result)
-
-        return other
 
     def attack(self):
         '''
