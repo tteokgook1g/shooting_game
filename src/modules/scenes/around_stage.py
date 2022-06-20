@@ -91,14 +91,14 @@ class AroundStage(Scene):
         '''
         boss의 다양한 state를 설정하고, 보스를 소환한다
         '''
-        img: pygame.Surface = StateManager.get_state('boss1', 'boss1_img')
+        img: pygame.Surface = StateManager.get_state('boss2', 'boss2_img')
         img_rect = img.get_rect()
         img_rect.top = 20
         img_rect.centerx = StateManager.get_state(
             'stage2', 'entity_boundary').centerx
         self.boss = Boss1(
             pos=img_rect.topleft,
-            img=StateManager.get_state('boss1', 'boss1_img'),
+            img=img,
             speed=(0, 0),
             boundary_rect=StateManager.get_state(
                 'stage2', 'entity_boundary'),
@@ -203,11 +203,12 @@ class AroundStage(Scene):
         ENTITY_BOUNDARY: pygame.Rect = StateManager.get_state(
             'stage2', 'entity_boundary')
         temp_screen = pygame.Surface(
-            (ENTITY_BOUNDARY.width, ENTITY_BOUNDARY.height))
+            (ENTITY_BOUNDARY.width, ENTITY_BOUNDARY.height), pygame.SRCALPHA)
         # player의 좌표를 기준으로 하는 화면 설정
         camera_rect = self.get_camera_rect()
         # screen에 entity들을 blit 한다
         temp_screen.fill((255, 255, 255, 0))
+        temp_screen.blit(BACKGROUND, (0, 0))
         pygame.draw.rect(temp_screen, (0, 0, 0), ENTITY_BOUNDARY, width=5)
         self.player.draw(temp_screen)
         for bullet in self.bullets.array:
@@ -217,7 +218,6 @@ class AroundStage(Scene):
         for enemy in self.enemies.array:
             enemy.draw(temp_screen)
         # camera_rect의 화면은 blit 한다
-        screen.blit(BACKGROUND, (0, 0))
         screen.blit(temp_screen, (0, 0), camera_rect)
         topright = screen.get_rect().topright
         # 체력바, 점수창을 화면에 blit 한다

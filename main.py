@@ -26,7 +26,7 @@ SCREEN_RECT = SCREEN.get_rect()
 # 3 - 그림과 효과음 삽입
 try:
     # 3.1 - 그림 삽입
-    player_img = pygame.image.load("./asset/img/player.jpg")
+    player_img = pygame.image.load("./asset/img/player.png")
     player_img = pygame.transform.scale(player_img, (192//4, 250//4))
     book = pygame.image.load("./asset/img/book.png")
     book = pygame.transform.scale(book, (378//10, 267//10))
@@ -41,10 +41,14 @@ try:
     bullet_img = pencil_img
     mouse_img = pygame.image.load("./asset/img/mouse.png")
     shotgun_img = mouse_img
+
     settings_img = pygame.image.load("./asset/img/settings_image.png")
     start_image = (pygame.image.load("./asset/img/opening_scene.png"))
     start_image = pygame.transform.scale(
         start_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
+    background2 = pygame.image.load("./asset/img/labimage.jpg")
+    background2_large = pygame.transform.scale(background2, (1000, 1000))
+    background2 = pygame.transform.scale(background2, (480, 640))
 
     energy_drink_img = pygame.image.load("./asset/img/energy-drink.png")
     energy_drink_img = pygame.transform.scale(
@@ -54,6 +58,9 @@ try:
     boss1_spell_img = pygame.image.load("./asset/img/boss1_spell1.png")
     boss1_img = pygame.image.load("./asset/img/boss1.png")
     boss1_img = pygame.transform.scale(boss1_img, (192//2, 250//2))
+
+    boss2_img = pygame.image.load("./asset/img/scientist.png")
+    boss2_img = pygame.transform.scale(boss2_img, (348//5, 632//5))
 
     # 3.2 - 효과음 삽입
     tutorial_bgm = pygame.mixer.Sound('./asset/audio/tutorial_bgm.mp3')
@@ -76,8 +83,7 @@ BLACK = (0, 0, 0)
 
 background = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 background.fill(WHITE)
-background2 = pygame.image.load("./asset/img/labimage.jpg")
-background2 = pygame.transform.scale(background2, (480, 640))
+
 
 # 4 - 시간 변수
 FPS = 30
@@ -98,18 +104,18 @@ global_state = GameState(
     opening_bgm=opening_bgm
 )
 stage1_config = GameState(
-    background=background,
+    background=start_image,
     entity_boundary=SCREEN_RECT
 )
 stage2_config = GameState(
-    background=background,  # 배경화면 설정
+    background=background2_large,  # 배경화면 설정
     entity_boundary=pygame.Rect(0, 0, 1000, 1000)
 )
 enemy_config = GameState(
     imgs=asteroidimgs,  # 이미지들
     speed=10,  # 초기 속도
     enemy_offset_width=5,  # 적이 좌우 벽에서 떨어진 정도
-    score=50,  # 적을 죽이면 얻는 점수
+    score=75,  # 적을 죽이면 얻는 점수
     health=100,  # 적의 체력
     power=50  # 적에게 맞으면 닳는 체력
 )
@@ -126,14 +132,17 @@ item_config = GameState(
     item_offset_width=20,  # 아이템이 좌우 벽에서 떨어진 정도
     heal=30  # 플레이어가 얻는 체력
 )
-boss_config = GameState(
+boss1_config = GameState(
     spell_img=boss1_spell_img,  # 보스 공격 이미지
     spell_speed=10,  # 보스의 속도
     spell_power=10,  # 보스 공격력
     boss1_img=boss1_img,  # 보스 이미지
     boss1_health=4000,  # 보스 체력
-    boss1_score=2400,  # 보스 처치시 점수
+    boss1_score=3000,  # 보스 처치시 점수
     boss1_summon_delay=50  # 스테이지 시작을 기준으로 보스 발생까지 걸리는 프레임 수
+)
+boss2_config = GameState(
+    boss2_img=boss2_img,  # 보스 이미지
 )
 player_config = GameState(
     pos=(SCREEN_WIDTH//2, SCREEN_HEIGHT*3//4),
@@ -153,7 +162,8 @@ state_manager.add_state('stage2', stage2_config)
 state_manager.add_state('enemy', enemy_config)
 state_manager.add_state('bullet', bullet_config)
 state_manager.add_state('item', item_config)
-state_manager.add_state('boss1', boss_config)
+state_manager.add_state('boss1', boss1_config)
+state_manager.add_state('boss2', boss2_config)
 state_manager.add_state('player', player_config)
 
 # 6 - scenes
@@ -201,7 +211,8 @@ scene_manager.add_scene('stage2', stage2)
 # game_over_scene
 finish_scene = FinishScene(
     score=0,
-    background=gameover_image
+    dark_background=gameover_image,
+    light_background=start_image
 )
 scene_manager.add_scene('finish_scene', finish_scene)
 
