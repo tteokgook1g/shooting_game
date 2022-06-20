@@ -36,6 +36,7 @@ class OpeningScene(Scene):
     def update(self):
         '''
         KEY_SPACE가 눌러져 있는지 확인한다
+        open_scene 안에 settings를 구현했다
         '''
         if pygame.event.peek(pygame.KEYDOWN):
             if pygame.key.get_pressed()[pygame.K_ESCAPE]:
@@ -75,6 +76,9 @@ class OpeningScene(Scene):
     def draw(self, screen: pygame.Surface):
         '''
         start text를 화면에 blit한다
+        state변수는 시작 화면과 설정 화면을 구분한다
+        Q,E로 값을 바꾸고,
+        방향키로 현재 설정 값을 바꾼다
         '''
         blit_item(screen, self.background, topleft=(0, 0))
         if self.state == -1:
