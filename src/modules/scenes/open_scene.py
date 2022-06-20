@@ -48,13 +48,13 @@ class OpeningScene(Scene):
             if pygame.key.get_pressed()[pygame.K_ESCAPE]:
                 self.state = self.state * -1
             if pygame.key.get_pressed()[pygame.K_UP]:
-                self.current_setting += 1
-                if self.current_setting > 3:
-                    self.current_setting -= 3
-            if pygame.key.get_pressed()[pygame.K_DOWN]:
                 self.current_setting -= 1
                 if self.current_setting < 1:
                     self.current_setting += 3
+            if pygame.key.get_pressed()[pygame.K_DOWN]:
+                self.current_setting += 1
+                if self.current_setting > 3:
+                    self.current_setting -= 3
         if pygame.key.get_pressed()[pygame.K_SPACE]:
             self.start_game()
         if self.current_setting == 1:
@@ -107,6 +107,11 @@ class OpeningScene(Scene):
                 center=(self.center[0], self.center[1]-100)
             )
         if self.state == 1:
+            blit_item(
+                screen=screen,
+                item=self.settings_image,
+                center=(50, 100*(self.current_setting)+165)
+            )
             blit_text(
                 screen=screen,
                 msg=f"current setting is: {self.current_settings[self.current_setting]}",
