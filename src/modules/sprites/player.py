@@ -60,8 +60,8 @@ class Player(EventListener):
         화면에 player의 체력바를 표시한다
         '''
         bar_width, bar_height = 16, 100
-        bar = pygame.Surface((bar_width, bar_height+20))
-        bar.fill((255, 255, 255))
+        bar = pygame.Surface((bar_width, bar_height+20), pygame.SRCALPHA)
+        bar.fill((255, 255, 255, 0))
         pygame.draw.rect(bar, (255, 0, 0), [
                          0, 0, bar_width, bar_height])
         pygame.draw.rect(bar, (0, 255, 0), [

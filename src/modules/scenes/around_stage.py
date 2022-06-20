@@ -134,7 +134,7 @@ class AroundStage(Scene):
         StateManager.set_state('player', 'health', self.player.health)
         StateManager.set_state('player', 'weapon', self.player.weapon)
         if self.grade == len(GRADE):
-            StateManager.set_state('player', 'grade', GRADE[-1])
+            StateManager.set_state('player', 'grade', GRADE[len(GRADE)-1])
         else:
             StateManager.set_state('player', 'grade', GRADE[self.grade])
         self.timer_manager.clear_all_timers()
@@ -237,8 +237,8 @@ class AroundStage(Scene):
     def render_score_bar(self):
         'score_bar에 grade를 blit 한다'
         bar_width, bar_height = 16, 100
-        bar = pygame.Surface((bar_width, bar_height))
-        bar.fill((255, 255, 255))
+        bar = pygame.Surface((bar_width, bar_height), pygame.SRCALPHA)
+        bar.fill((255, 255, 255, 0))
         if self.grade == len(GRADE):
             pygame.draw.rect(bar, (0, 0, 255), [
                 0, 0, bar_width, bar_height])
@@ -251,8 +251,8 @@ class AroundStage(Scene):
             bar = pygame.transform.rotate(bar, 180)
             text = render_text(GRADE[self.grade], (0, 0, 0), 12)
 
-        result = pygame.Surface((32, 120))
-        result.fill((255, 255, 255))
+        result = pygame.Surface((32, 120), pygame.SRCALPHA)
+        result.fill((255, 255, 255, 0))
         blit_item(result, bar, midtop=result.get_rect().midtop)
         blit_item(result, text, midbottom=result.get_rect().midbottom)
 

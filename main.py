@@ -12,7 +12,6 @@ from src.modules.scenes.around_stage import AroundStage
 from src.modules.scenes.finish_scene import FinishScene
 from src.modules.scenes.game_stage import GameStage
 from src.modules.scenes.open_scene import OpeningScene
-from src.modules.scenes.shop_scene import ShopScene
 from src.modules.scenes.tutorial_stage import TutorialStage
 from src.modules.weapons.player_weapon import *
 
@@ -216,10 +215,6 @@ finish_scene = FinishScene(
     light_background=start_image
 )
 scene_manager.add_scene('finish_scene', finish_scene)
-
-# shop_scene
-shop_scene = ShopScene(background=background)
-scene_manager.add_scene('shop_scene', shop_scene)
 
 # start with opening_scene
 scene_manager.next_scene = opening_scene

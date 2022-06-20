@@ -142,7 +142,7 @@ class GameStage(Scene):
         다음 스테이지로 넘어갈 때 모든 entity와 timer를 제거한다
         '''
 
-        self.bgm.stop() # 음악을 멈춘다
+        self.bgm.stop()  # 음악을 멈춘다
         StateManager.set_state('player', 'health', self.player.health)
         StateManager.set_state('player', 'weapon', self.player.weapon)
         if self.grade == len(GRADE):
@@ -234,8 +234,8 @@ class GameStage(Scene):
         score_bar를 result에 blit해서 반환한다
         '''
         bar_width, bar_height = 16, 100
-        bar = pygame.Surface((bar_width, bar_height))
-        bar.fill((255, 255, 255))
+        bar = pygame.Surface((bar_width, bar_height), pygame.SRCALPHA)
+        bar.fill((255, 255, 255, 0))
         if self.grade == len(GRADE):
             pygame.draw.rect(bar, (0, 0, 255), [
                 0, 0, bar_width, bar_height])
@@ -248,8 +248,8 @@ class GameStage(Scene):
             bar = pygame.transform.rotate(bar, 180)
             text = render_text(GRADE[self.grade], (0, 0, 0), 12)
 
-        result = pygame.Surface((32, 120))
-        result.fill((255, 255, 255))
+        result = pygame.Surface((32, 120), pygame.SRCALPHA)
+        result.fill((255, 255, 255, 0))
         blit_item(result, bar, midtop=result.get_rect().midtop)
         blit_item(result, text, midbottom=result.get_rect().midbottom)
 
