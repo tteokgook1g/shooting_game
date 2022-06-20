@@ -43,6 +43,7 @@ try:
     shotgun_img = mouse_img
 
     settings_img = pygame.image.load("./asset/img/settings_image.png")
+    settings_img = pygame.transform.scale(settings_img, (40, 60))
     start_image = (pygame.image.load("./asset/img/opening_scene.png"))
     start_image = pygame.transform.scale(
         start_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
