@@ -32,7 +32,7 @@ class StateManager():
 
     @classmethod
     def get_state(cls, type: str, name: str):
-        'configs에 Gamestate를 추가한다'
+        '원하는 state의 값을 반환한다'
         return cls.configs[type].get_state(name)
 
     @classmethod
